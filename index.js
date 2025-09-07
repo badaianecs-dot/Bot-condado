@@ -141,15 +141,18 @@ client.once("ready", async () => {
 
 // ---------------- INTERAÇÕES ----------------
 client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
-
-  const commandName = interaction.commandName;
-  const temPermissao = STAFF_ROLES.some((r) => interaction.member.roles.cache.has(r));
-
   try {
+    if (!interaction.isChatInputCommand()) return;
+
+    const commandName = interaction.commandName;
+    const temPermissao = STAFF_ROLES.some((r) => interaction.member.roles.cache.has(r));
+
+    if (!interaction.deferred && !interaction.replied) {
+      await interaction.deferReply({ ephemeral: true });
+    }
+
     if (!temPermissao) {
-      await interaction.reply({ content: "❌ Apenas STAFF pode usar este comando.", ephemeral: true });
-      return;
+      return interaction.editReply({ content: "❌ Apenas STAFF pode usar este comando.", ephemeral: true });
     }
 
     // --------- /aviso ---------
@@ -166,9 +169,10 @@ client.on("interactionCreate", async (interaction) => {
 
       if (imagem) embed.setImage(imagem);
 
-      await interaction.reply({ embeds: [embed] });
-      await interaction.followUp({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-      return;
+      await interaction.channel.send({ embeds: [embed] });
+      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+
+      return interaction.editReply({ content: "✅ Aviso enviado!", ephemeral: true });
     }
 
     // --------- /evento ---------
@@ -182,12 +186,7 @@ client.on("interactionCreate", async (interaction) => {
       const observacao = interaction.options.getString("observacao");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      let descEmbed =
-        `**Descrição:** ${descricao}\n\n` +
-        `**Data:** ${data}\n\n` +
-        `**Horário:** ${horario}\n\n` +
-        `**Local:** ${local}`;
-
+      let descEmbed = `**Descrição:** ${descricao}\n\n**Data:** ${data}\n\n**Horário:** ${horario}\n\n**Local:** ${local}`;
       if (premiacao) descEmbed += `\n\n**Premiação:** ${premiacao}`;
       if (observacao) descEmbed += `\n\n**Observação:** ${observacao}`;
 
@@ -199,9 +198,10 @@ client.on("interactionCreate", async (interaction) => {
 
       if (imagem) embed.setImage(imagem);
 
-      await interaction.reply({ embeds: [embed] });
-      await interaction.followUp({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-      return;
+      await interaction.channel.send({ embeds: [embed] });
+      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+
+      return interaction.editReply({ content: "✅ Evento enviado!", ephemeral: true });
     }
 
     // --------- /atualizacoes ---------
@@ -213,10 +213,8 @@ client.on("interactionCreate", async (interaction) => {
       }
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      if (textos.length === 0) {
-        await interaction.reply({ content: "❌ Informe pelo menos uma atualização.", ephemeral: true });
-        return;
-      }
+      if (textos.length === 0)
+        return interaction.editReply({ content: "❌ Informe pelo menos uma atualização.", ephemeral: true });
 
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
@@ -226,38 +224,39 @@ client.on("interactionCreate", async (interaction) => {
 
       if (imagem) embed.setImage(imagem);
 
-      await interaction.reply({ embeds: [embed] });
-      await interaction.followUp({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-      return;
+      await interaction.channel.send({ embeds: [embed] });
+      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+
+      return interaction.editReply({ content: "✅ Atualizações enviadas!", ephemeral: true });
     }
 
     // --------- /pix e /pix2 ---------
     if (commandName === "pix" || commandName === "pix2") {
       const valor = interaction.options.getString("valor");
-      const item = commandName === "pix" 
-        ? interaction.options.getString("produto") 
-        : interaction.options.getString("servico");
+      const item = commandName === "pix" ? interaction.options.getString("produto") : interaction.options.getString("servico");
       const desconto = interaction.options.getString("desconto");
 
-      const espacamento = "\u00A0\u00A0"; // dois espaços inseparáveis
-      let descricao =
-        `<:Pix:1351222074097664111> **PIX** - ${
-          commandName === "pix"
-            ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)"
-            : "leandro.hevieira@gmail.com"
-        }\n\n` +
-        `<:seta:1346148222044995714> **VALOR:** ${valor}${espacamento}**${commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n` +
-        `**Enviar o comprovante após o pagamento.**`;
+      // Colunas fixas para alinhamento
+      const VALOR_COL = 15;
+      const ITEM_COL = 20;
+      const paddedValor = valor.padEnd(VALOR_COL, " ");
+      const paddedItem = item.padEnd(ITEM_COL, " ");
 
-      if (desconto) descricao += `\n\n*Desconto aplicado: ${desconto}%*`;
+      let descricao = `<:Pix:1351222074097664111> **PIX** - ${
+        commandName === "pix"
+          ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)"
+          : "leandro.hevieira@gmail.com"
+      }\n\n<:seta:1346148222044995714> **VALOR:** ${paddedValor} **${commandName === "pix" ? "Produto" : "Serviço"}:** ${paddedItem}\n\n**Enviar o comprovante após o pagamento.**`;
+
+      if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
 
       const embed = new EmbedBuilder()
         .setColor("#00FF00")
         .setDescription(descricao)
         .setFooter({ text: "Atenciosamente, Condado.", iconURL: RODAPE_ICON });
 
-      await interaction.reply({ embeds: [embed] });
-      return;
+      await interaction.channel.send({ embeds: [embed] });
+      return interaction.editReply({ content: "✅ PIX enviado com sucesso!", ephemeral: true });
     }
 
     // --------- /cargostreamer ---------
@@ -272,8 +271,8 @@ client.on("interactionCreate", async (interaction) => {
 
       const mensagem = await interaction.channel.send({ embeds: [embed] });
       await mensagem.react("1353492062376558674");
-      await interaction.reply({ content: "✅ Mensagem de cargo enviada!", ephemeral: true });
-      return;
+
+      return interaction.editReply({ content: "✅ Mensagem de cargo enviada!", ephemeral: true });
     }
 
     // --------- /entrevista ---------
@@ -293,14 +292,19 @@ client.on("interactionCreate", async (interaction) => {
           .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
       );
 
-      await interaction.reply({ embeds: [embed], components: [row] });
-      await interaction.followUp({ content: `<@&1136131478888124526>` });
-      return;
+      await interaction.channel.send({ embeds: [embed], components: [row] });
+      await interaction.channel.send({ content: `<@&1136131478888124526>` });
+
+      return interaction.editReply({ content: "✅ Mensagem de entrevista enviada com sucesso!", ephemeral: true });
     }
 
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
-    if (!interaction.replied) await interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true });
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true });
+    } else {
+      await interaction.followUp({ content: "❌ Ocorreu um erro.", ephemeral: true });
+    }
   }
 });
 
