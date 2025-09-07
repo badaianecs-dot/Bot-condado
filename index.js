@@ -145,12 +145,10 @@ client.on("interactionCreate", async (interaction) => {
 
   const commandName = interaction.commandName;
   const temPermissao = STAFF_ROLES.some((r) => interaction.member.roles.cache.has(r));
-  let replied = false;
 
   try {
     if (!temPermissao) {
       await interaction.reply({ content: "❌ Apenas STAFF pode usar este comando.", ephemeral: true });
-      replied = true;
       return;
     }
 
@@ -168,10 +166,8 @@ client.on("interactionCreate", async (interaction) => {
 
       if (imagem) embed.setImage(imagem);
 
-      await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-
-      if (!replied) await interaction.reply({ content: "✅ Aviso enviado!", ephemeral: true });
+      await interaction.reply({ embeds: [embed] });
+      await interaction.followUp({ content: `<@&${CIDADAO_ROLE}> @everyone` });
       return;
     }
 
@@ -203,10 +199,8 @@ client.on("interactionCreate", async (interaction) => {
 
       if (imagem) embed.setImage(imagem);
 
-      await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-
-      if (!replied) await interaction.reply({ content: "✅ Evento enviado!", ephemeral: true });
+      await interaction.reply({ embeds: [embed] });
+      await interaction.followUp({ content: `<@&${CIDADAO_ROLE}> @everyone` });
       return;
     }
 
@@ -220,7 +214,7 @@ client.on("interactionCreate", async (interaction) => {
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
       if (textos.length === 0) {
-        if (!replied) await interaction.reply({ content: "❌ Informe pelo menos uma atualização.", ephemeral: true });
+        await interaction.reply({ content: "❌ Informe pelo menos uma atualização.", ephemeral: true });
         return;
       }
 
@@ -232,10 +226,8 @@ client.on("interactionCreate", async (interaction) => {
 
       if (imagem) embed.setImage(imagem);
 
-      await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-
-      if (!replied) await interaction.reply({ content: "✅ Atualizações enviadas!", ephemeral: true });
+      await interaction.reply({ embeds: [embed] });
+      await interaction.followUp({ content: `<@&${CIDADAO_ROLE}> @everyone` });
       return;
     }
 
@@ -247,13 +239,14 @@ client.on("interactionCreate", async (interaction) => {
         : interaction.options.getString("servico");
       const desconto = interaction.options.getString("desconto");
 
+      const espacamento = "\u00A0\u00A0"; // dois espaços inseparáveis
       let descricao =
         `<:Pix:1351222074097664111> **PIX** - ${
           commandName === "pix"
             ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)"
             : "leandro.hevieira@gmail.com"
         }\n\n` +
-        `<:seta:1346148222044995714> **VALOR:** ${valor}  **${commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n` +
+        `<:seta:1346148222044995714> **VALOR:** ${valor}${espacamento}**${commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n` +
         `**Enviar o comprovante após o pagamento.**`;
 
       if (desconto) descricao += `\n\n*Desconto aplicado: ${desconto}%*`;
@@ -263,8 +256,7 @@ client.on("interactionCreate", async (interaction) => {
         .setDescription(descricao)
         .setFooter({ text: "Atenciosamente, Condado.", iconURL: RODAPE_ICON });
 
-      await interaction.channel.send({ embeds: [embed] });
-      if (!replied) await interaction.reply({ content: "✅ PIX enviado com sucesso!", ephemeral: true });
+      await interaction.reply({ embeds: [embed] });
       return;
     }
 
@@ -280,8 +272,7 @@ client.on("interactionCreate", async (interaction) => {
 
       const mensagem = await interaction.channel.send({ embeds: [embed] });
       await mensagem.react("1353492062376558674");
-
-      if (!replied) await interaction.reply({ content: "✅ Mensagem de cargo enviada!", ephemeral: true });
+      await interaction.reply({ content: "✅ Mensagem de cargo enviada!", ephemeral: true });
       return;
     }
 
@@ -302,15 +293,14 @@ client.on("interactionCreate", async (interaction) => {
           .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
       );
 
-      await interaction.channel.send({ embeds: [embed], components: [row] });
-      await interaction.channel.send({ content: `<@&1136131478888124526>` });
-
-      if (!replied) await interaction.reply({ content: "✅ Mensagem de entrevista enviada com sucesso!", ephemeral: true });
+      await interaction.reply({ embeds: [embed], components: [row] });
+      await interaction.followUp({ content: `<@&1136131478888124526>` });
       return;
     }
+
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
-    if (!replied) await interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true });
+    if (!interaction.replied) await interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true });
   }
 });
 
