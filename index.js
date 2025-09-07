@@ -1,14 +1,15 @@
-const { 
-  Client, 
-  GatewayIntentBits, 
-  EmbedBuilder, 
-  SlashCommandBuilder, 
-  REST, 
-  Routes, 
-  ActionRowBuilder, 
-  ButtonBuilder, 
-  ButtonStyle 
+const {
+  Client,
+  GatewayIntentBits,
+  EmbedBuilder,
+  SlashCommandBuilder,
+  REST,
+  Routes,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle
 } = require("discord.js");
+require("dotenv").config();
 const express = require("express");
 
 // ---------------- CLIENTE ----------------
@@ -18,8 +19,8 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMessageReactions,
     GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.MessageContent,
-  ],
+    GatewayIntentBits.MessageContent
+  ]
 });
 
 // ---------------- CONFIGURAÇÕES ----------------
@@ -32,7 +33,7 @@ const STAFF_ROLES = [
   "1136127586737590412",
   "1181617285530660904",
   "1123014410496118784",
-  "1197207305968701521",
+  "1197207305968701521"
 ];
 const CIDADAO_ROLE = "1136132647115030608";
 
@@ -72,13 +73,23 @@ const commands = [
     .addStringOption(opt => opt.setName("texto10").setDescription("Atualização 10").setRequired(false))
     .addAttachmentOption(opt => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
 
-  new SlashCommandBuilder()
-    .setName("cargostreamer")
-    .setDescription("Mensagem para pegar o cargo Streamer"),
+  new SlashCommandBuilder().setName("cargostreamer").setDescription("Mensagem para pegar o cargo Streamer"),
+  new SlashCommandBuilder().setName("teste").setDescription("Comando de teste"),
+  new SlashCommandBuilder().setName("entrevista").setDescription("📌 Envia mensagem de aguarde entrevista"),
 
   new SlashCommandBuilder()
-    .setName("teste")
-    .setDescription("Comando de teste"),
+    .setName("pix")
+    .setDescription("💰 PIX Gabriel (STAFF)")
+    .addStringOption(opt => opt.setName("valor").setDescription("Valor").setRequired(true))
+    .addStringOption(opt => opt.setName("produto").setDescription("Produto").setRequired(true))
+    .addStringOption(opt => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
+
+  new SlashCommandBuilder()
+    .setName("pix2")
+    .setDescription("💰 PIX Leandro (STAFF)")
+    .addStringOption(opt => opt.setName("valor").setDescription("Valor").setRequired(true))
+    .addStringOption(opt => opt.setName("servico").setDescription("Serviço").setRequired(true))
+    .addStringOption(opt => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false))
 ].map(cmd => cmd.toJSON());
 
 // ---------------- REGISTRAR COMANDOS ----------------
@@ -95,7 +106,7 @@ client.once("ready", async () => {
 });
 
 // ---------------- INTERAÇÕES ----------------
-client.on("interactionCreate", async (interaction) => {
+client.on("interactionCreate", async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
   const temPermissao = STAFF_ROLES.some(r => interaction.member.roles.cache.has(r));
@@ -103,10 +114,12 @@ client.on("interactionCreate", async (interaction) => {
   try {
     await interaction.deferReply({ ephemeral: true });
 
+    // ---------- TESTE ----------
     if (interaction.commandName === "teste") {
       return interaction.editReply({ content: "✅ Comando de teste funcionando!" });
     }
 
+    // ---------- AVISO ----------
     if (interaction.commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao").replace(/\\n/g, "\n");
@@ -116,10 +129,11 @@ client.on("interactionCreate", async (interaction) => {
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` }); // menções abaixo do embed
+      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
       return interaction.editReply({ content: "✅ Aviso enviado!" });
     }
 
+    // ---------- EVENTO ----------
     if (interaction.commandName === "evento") {
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao");
@@ -142,6 +156,7 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.editReply({ content: "✅ Evento enviado!" });
     }
 
+    // ---------- ATUALIZACOES ----------
     if (interaction.commandName === "atualizacoes") {
       const textos = [];
       for (let i = 1; i <= 10; i++) {
@@ -159,6 +174,7 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.editReply({ content: "✅ Atualizações enviadas!" });
     }
 
+    // ---------- CARGO STREAMER ----------
     if (interaction.commandName === "cargostreamer") {
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
@@ -170,6 +186,44 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.editReply({ content: "✅ Mensagem de cargo enviada!" });
     }
 
+    // ---------- ENTREVISTA ----------
+    if (interaction.commandName === "entrevista") {
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle("Olá, visitantes!")
+        .setDescription("As entrevistas já estão disponíveis. Para participar, clique no botão abaixo e um membro da equipe irá atendê-lo em breve.\n\nDesejamos boa sorte!");
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setLabel("Aguarde Entrevista")
+          .setStyle(ButtonStyle.Link)
+          .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
+      );
+
+      await interaction.channel.send({ embeds: [embed], components: [row] });
+      await interaction.channel.send({ content: `<@&1136131478888124526>` });
+      return interaction.editReply({ content: "✅ Mensagem de entrevista enviada com sucesso!" });
+    }
+
+    // ---------- PIX ----------
+    if (interaction.commandName === "pix" || interaction.commandName === "pix2") {
+      if (!temPermissao) return interaction.editReply({ content: "❌ Apenas STAFF." });
+      const valor = interaction.options.getString("valor");
+      const item = interaction.commandName === "pix" ? interaction.options.getString("produto") : interaction.options.getString("servico");
+      const desconto = interaction.options.getString("desconto");
+
+      let descricao = `<:Pix:1351222074097664111> **PIX** - ${
+        interaction.commandName === "pix"
+          ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)"
+          : "leandro.hevieira@gmail.com"
+      }\n\n<:seta:1346148222044995714> **VALOR:** ${valor}\u2003\u2003\u2003**${interaction.commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n**Enviar o comprovante após o pagamento.**`;
+      if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
+
+      const embed = new EmbedBuilder().setColor("#00FF00").setDescription(descricao);
+      await interaction.channel.send({ embeds: [embed] });
+      return interaction.editReply({ content: "✅ PIX enviado com sucesso!" });
+    }
+
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
     if (!interaction.replied && !interaction.deferred) {
@@ -177,6 +231,18 @@ client.on("interactionCreate", async (interaction) => {
     } else {
       await interaction.followUp({ content: "❌ Ocorreu um erro.", ephemeral: true });
     }
+  }
+});
+
+// ---------------- REAÇÕES ----------------
+client.on("messageReactionAdd", async (reaction, user) => {
+  if (reaction.partial) await reaction.fetch();
+  if (reaction.message.partial) await reaction.message.fetch();
+  if (user.bot) return;
+
+  if (reaction.emoji.id === "1353492062376558674") {
+    const member = await reaction.message.guild.members.fetch(user.id);
+    await member.roles.add(STREAMER_ROLE);
   }
 });
 
