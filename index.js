@@ -142,8 +142,10 @@ client.on("interactionCreate", async interaction => {
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descricao);
       if (imagem) embed.setImage(imagem);
 
-      await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+      await interaction.channel.send({ 
+        content: `<@&${CIDADAO_ROLE}> @everyone`, 
+        embeds: [embed] 
+      });
 
       return interaction.editReply({ content: "✅ Aviso enviado!", ephemeral: true });
     }
@@ -166,8 +168,10 @@ client.on("interactionCreate", async interaction => {
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descEmbed);
       if (imagem) embed.setImage(imagem);
 
-      await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+      await interaction.channel.send({ 
+        content: `<@&${CIDADAO_ROLE}> @everyone`, 
+        embeds: [embed] 
+      });
 
       return interaction.editReply({ content: "✅ Evento enviado!", ephemeral: true });
     }
@@ -187,8 +191,10 @@ client.on("interactionCreate", async interaction => {
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle("📰 ATUALIZAÇÕES").setDescription(textos.join("\n\n"));
       if (imagem) embed.setImage(imagem);
 
-      await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+      await interaction.channel.send({ 
+        content: `<@&${CIDADAO_ROLE}> @everyone`, 
+        embeds: [embed] 
+      });
 
       return interaction.editReply({ content: "✅ Atualizações enviadas!", ephemeral: true });
     }
