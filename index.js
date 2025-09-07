@@ -39,6 +39,7 @@ const STAFF_ROLES = [
   "1197207305968701521",
 ];
 const CIDADAO_ROLE = "1136132647115030608";
+const RODAPE_ICON = "https://message.style/cdn/images/68f85b92c91261ecce65f4c8e2965bd56787314598cd6e5433919c5690491550.png";
 
 // ---------------- COMANDOS ----------------
 const commands = [
@@ -141,7 +142,12 @@ client.on("interactionCreate", async (interaction) => {
       const descricao = interaction.options.getString("descricao").replace(/\\n/g, "\n");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descricao);
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle(titulo)
+        .setDescription(descricao)
+        .setFooter({ text: "Atenciosamente, Condado.", iconURL: RODAPE_ICON });
+
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
@@ -165,7 +171,12 @@ client.on("interactionCreate", async (interaction) => {
       if (premiacao) descEmbed += `\n\n**Premiação:** ${premiacao}`;
       if (observacao) descEmbed += `\n\n**Observação:** ${observacao}`;
 
-      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descEmbed);
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle(titulo)
+        .setDescription(descEmbed)
+        .setFooter({ text: "Atenciosamente, Condado.", iconURL: RODAPE_ICON });
+
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
@@ -186,7 +197,12 @@ client.on("interactionCreate", async (interaction) => {
       if (textos.length === 0)
         return interaction.editReply({ content: "❌ Informe pelo menos uma atualização.", ephemeral: true });
 
-      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle("ATUALIZAÇÕES").setDescription(textos.join("\n\n"));
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle("ATUALIZAÇÕES")
+        .setDescription(textos.join("\n\n"))
+        .setFooter({ text: "Atenciosamente, Condado.", iconURL: RODAPE_ICON });
+
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
@@ -209,7 +225,10 @@ client.on("interactionCreate", async (interaction) => {
 
       if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
 
-      const embed = new EmbedBuilder().setColor("#00FF00").setDescription(descricao);
+      const embed = new EmbedBuilder()
+        .setColor("#00FF00")
+        .setDescription(descricao)
+        .setFooter({ text: "Atenciosamente, Condado.", iconURL: RODAPE_ICON });
 
       await interaction.channel.send({ embeds: [embed] });
       return interaction.editReply({ content: "✅ PIX enviado com sucesso!", ephemeral: true });
@@ -222,7 +241,8 @@ client.on("interactionCreate", async (interaction) => {
         .setTitle("Seja Streamer!")
         .setDescription(
           `Após uma semana, cumprindo os requisitos, você receberá os benefícios na cidade.\n\nReaja com <:Streamer:1353492062376558674> para receber o cargo Streamer!`
-        );
+        )
+        .setFooter({ text: "Atenciosamente, Condado.", iconURL: RODAPE_ICON });
 
       const mensagem = await interaction.channel.send({ embeds: [embed] });
       await mensagem.react("1353492062376558674");
@@ -237,7 +257,8 @@ client.on("interactionCreate", async (interaction) => {
         .setTitle("Olá, visitantes!")
         .setDescription(
           "As entrevistas já estão disponíveis. Para participar, clique no botão abaixo e um membro da equipe irá atendê-lo em breve.\n\nDesejamos boa sorte!"
-        );
+        )
+        .setFooter({ text: "Atenciosamente, Condado.", iconURL: RODAPE_ICON });
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
