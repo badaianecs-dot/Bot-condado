@@ -26,7 +26,7 @@ const client = new Client({
 // ---------------- CONFIGURAÇÕES ----------------
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
-const GUILD_ID = process.env.GUILD_ID;
+const GUILD_IDS = [process.env.GUILD_ID_1, process.env.GUILD_ID_2]; // apenas 2 servidores
 const COLOR_PADRAO = "#f6b21b";
 const STREAMER_ROLE = "1150955061606895737";
 const STAFF_ROLES = [
@@ -98,8 +98,10 @@ client.once("ready", async () => {
   const rest = new REST({ version: "10" }).setToken(TOKEN);
 
   try {
-    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
-    console.log("✅ Comandos registrados!");
+    for (const guildId of GUILD_IDS) {
+      await rest.put(Routes.applicationGuildCommands(CLIENT_ID, guildId), { body: commands });
+    }
+    console.log("✅ Comandos registrados apenas nas guilds permitidas!");
   } catch (err) {
     console.error("❌ Erro ao registrar comandos:", err);
   }
@@ -107,7 +109,8 @@ client.once("ready", async () => {
 
 // ---------------- INTERAÇÕES ----------------
 client.on("interactionCreate", async interaction => {
-  if (!interaction.isChatInputCommand()) return;
+  // Bloquear guilds que não estão na lista
+  if (!GUILD_IDS.includes(interaction.guild.id)) return;
 
   const temPermissao = STAFF_ROLES.some(r => interaction.member.roles.cache.has(r));
 
@@ -212,11 +215,7 @@ client.on("interactionCreate", async interaction => {
       const item = interaction.commandName === "pix" ? interaction.options.getString("produto") : interaction.options.getString("servico");
       const desconto = interaction.options.getString("desconto");
 
-      let descricao = `<:Pix:1351222074097664111> **PIX** - ${
-        interaction.commandName === "pix"
-          ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)"
-          : "leandro.hevieira@gmail.com"
-      }\n\n<:seta:1346148222044995714> **VALOR:** ${valor}\u2003\u2003\u2003**${interaction.commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n**Enviar o comprovante após o pagamento.**`;
+      let descricao = `<:Pix:1351222074097664111> **PIX** - ${interaction.commandName === "pix" ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)" : "leandro.hevieira@gmail.com"}\n\n<:seta:1346148222044995714> **VALOR:** ${valor}\u2003\u2003\u2003**${interaction.commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n**Enviar o comprovante após o pagamento.**\n`;
       if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
 
       const embed = new EmbedBuilder().setColor("#00FF00").setDescription(descricao);
@@ -236,13 +235,17 @@ client.on("interactionCreate", async interaction => {
 
 // ---------------- REAÇÕES ----------------
 client.on("messageReactionAdd", async (reaction, user) => {
-  if (reaction.partial) await reaction.fetch();
-  if (reaction.message.partial) await reaction.message.fetch();
-  if (user.bot) return;
+  try {
+    if (reaction.partial) await reaction.fetch();
+    if (reaction.message.partial) await reaction.message.fetch();
+    if (user.bot) return;
 
-  if (reaction.emoji.id === "1353492062376558674") {
-    const member = await reaction.message.guild.members.fetch(user.id);
-    await member.roles.add(STREAMER_ROLE);
+    if (reaction.emoji.id === "1353492062376558674") {
+      const member = await reaction.message.guild.members.fetch(user.id);
+      await member.roles.add(STREAMER_ROLE);
+    }
+  } catch (err) {
+    console.error("Erro em messageReactionAdd:", err);
   }
 });
 
@@ -250,7 +253,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
 const app = express();
 app.get("/", (req, res) => res.send("Bot está rodando e acordado! ✅"));
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("🌐 Servidor web ativo!"));
+app.listen(PORT, () => console.log("🌐 Servidor web ativo para manter o bot acordado!"));
 
 // ---------------- LOGIN ----------------
 client.login(TOKEN);
