@@ -84,36 +84,16 @@ const commands = [
   new SlashCommandBuilder()
     .setName("atualizacoes")
     .setDescription("Enviar atualizações")
-    .addStringOption((opt) =>
-      opt.setName("texto1").setDescription("Atualização 1").setRequired(true)
-    )
-    .addStringOption((opt) =>
-      opt.setName("texto2").setDescription("Atualização 2").setRequired(false)
-    )
-    .addStringOption((opt) =>
-      opt.setName("texto3").setDescription("Atualização 3").setRequired(false)
-    )
-    .addStringOption((opt) =>
-      opt.setName("texto4").setDescription("Atualização 4").setRequired(false)
-    )
-    .addStringOption((opt) =>
-      opt.setName("texto5").setDescription("Atualização 5").setRequired(false)
-    )
-    .addStringOption((opt) =>
-      opt.setName("texto6").setDescription("Atualização 6").setRequired(false)
-    )
-    .addStringOption((opt) =>
-      opt.setName("texto7").setDescription("Atualização 7").setRequired(false)
-    )
-    .addStringOption((opt) =>
-      opt.setName("texto8").setDescription("Atualização 8").setRequired(false)
-    )
-    .addStringOption((opt) =>
-      opt.setName("texto9").setDescription("Atualização 9").setRequired(false)
-    )
-    .addStringOption((opt) =>
-      opt.setName("texto10").setDescription("Atualização 10").setRequired(false)
-    )
+    .addStringOption((opt) => opt.setName("texto1").setDescription("Atualização 1").setRequired(true))
+    .addStringOption((opt) => opt.setName("texto2").setDescription("Atualização 2").setRequired(false))
+    .addStringOption((opt) => opt.setName("texto3").setDescription("Atualização 3").setRequired(false))
+    .addStringOption((opt) => opt.setName("texto4").setDescription("Atualização 4").setRequired(false))
+    .addStringOption((opt) => opt.setName("texto5").setDescription("Atualização 5").setRequired(false))
+    .addStringOption((opt) => opt.setName("texto6").setDescription("Atualização 6").setRequired(false))
+    .addStringOption((opt) => opt.setName("texto7").setDescription("Atualização 7").setRequired(false))
+    .addStringOption((opt) => opt.setName("texto8").setDescription("Atualização 8").setRequired(false))
+    .addStringOption((opt) => opt.setName("texto9").setDescription("Atualização 9").setRequired(false))
+    .addStringOption((opt) => opt.setName("texto10").setDescription("Atualização 10").setRequired(false))
     .addAttachmentOption((opt) =>
       opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
     ),
@@ -125,42 +105,33 @@ const commands = [
   new SlashCommandBuilder()
     .setName("pix")
     .setDescription("💰 PIX Gabriel (STAFF)")
-    .addStringOption((opt) =>
-      opt.setName("valor").setDescription("Valor").setRequired(true)
-    )
-    .addStringOption((opt) =>
-      opt.setName("produto").setDescription("Produto").setRequired(true)
-    )
-    .addStringOption((opt) =>
-      opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)
-    ),
+    .addStringOption((opt) => opt.setName("valor").setDescription("Valor").setRequired(true))
+    .addStringOption((opt) => opt.setName("produto").setDescription("Produto").setRequired(true))
+    .addStringOption((opt) => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
 
   new SlashCommandBuilder()
     .setName("pix2")
     .setDescription("💰 PIX Leandro (STAFF)")
-    .addStringOption((opt) =>
-      opt.setName("valor").setDescription("Valor").setRequired(true)
-    )
-    .addStringOption((opt) =>
-      opt.setName("servico").setDescription("Serviço").setRequired(true)
-    )
-    .addStringOption((opt) =>
-      opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)
-    ),
+    .addStringOption((opt) => opt.setName("valor").setDescription("Valor").setRequired(true))
+    .addStringOption((opt) => opt.setName("servico").setDescription("Serviço").setRequired(true))
+    .addStringOption((opt) => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
 ].map((cmd) => cmd.toJSON());
 
-// ---------------- LIMPAR COMANDOS ANTIGOS E REGISTRAR ----------------
+// ---------------- REGISTRAR COMANDOS ----------------
 client.once("ready", async () => {
   console.log(`🤖 Bot online como ${client.user.tag}`);
   const rest = new REST({ version: "10" }).setToken(TOKEN);
 
   try {
+    // Limpa antigos comandos globais
     await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
     console.log("✅ Comandos globais antigos removidos");
 
+    // Limpa antigos comandos de guild
     await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] });
     console.log("✅ Comandos da guilda antigos removidos");
 
+    // Registra os comandos novos
     await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
     console.log("✅ Comandos atualizados e registrados!");
   } catch (err) {
@@ -168,28 +139,14 @@ client.once("ready", async () => {
   }
 });
 
-// ---------------- FUNÇÃO SAFE REPLY ----------------
-async function safeReply(interaction, options) {
-  try {
-    if (interaction.deferred || interaction.replied) {
-      await interaction.editReply(options);
-    } else {
-      await interaction.reply(options);
-    }
-  } catch (err) {
-    console.error("Erro ao responder interação:", err);
-  }
-}
-
 // ---------------- INTERAÇÕES ----------------
 client.on("interactionCreate", async (interaction) => {
-  try {
-    if (!interaction.isChatInputCommand()) return;
-    const commandName = interaction.commandName;
-    const temPermissao = STAFF_ROLES.some((r) =>
-      interaction.member.roles.cache.has(r)
-    );
+  if (!interaction.isChatInputCommand()) return;
 
+  const commandName = interaction.commandName;
+  const temPermissao = STAFF_ROLES.some((r) => interaction.member.roles.cache.has(r));
+
+  try {
     if (!interaction.deferred && !interaction.replied) {
       await interaction.deferReply({ ephemeral: true });
     }
@@ -201,16 +158,13 @@ client.on("interactionCreate", async (interaction) => {
       const descricao = descricaoRaw.replace(/\\n/g, "\n");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      const embed = new EmbedBuilder()
-        .setColor(COLOR_PADRAO)
-        .setTitle(titulo)
-        .setDescription(descricao);
+      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descricao);
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
 
-      return safeReply(interaction, { content: "✅ Aviso enviado!" });
+      return interaction.editReply({ content: "✅ Aviso enviado!" });
     }
 
     // ------------- /evento -------------
@@ -228,15 +182,12 @@ client.on("interactionCreate", async (interaction) => {
       if (premiacao) descEmbed += `\n\n**Premiação:** ${premiacao}`;
       if (observacao) descEmbed += `\n\n**Observação:** ${observacao}`;
 
-      const embed = new EmbedBuilder()
-        .setColor(COLOR_PADRAO)
-        .setTitle(titulo)
-        .setDescription(descEmbed);
+      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descEmbed);
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-      return safeReply(interaction, { content: "✅ Evento enviado!" });
+      return interaction.editReply({ content: "✅ Evento enviado!" });
     }
 
     // ------------- /atualizacoes -------------
@@ -249,30 +200,24 @@ client.on("interactionCreate", async (interaction) => {
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
       if (textos.length === 0)
-        return safeReply(interaction, { content: "❌ Informe pelo menos uma atualização." });
+        return interaction.editReply({ content: "❌ Informe pelo menos uma atualização." });
 
-      const embed = new EmbedBuilder()
-        .setColor(COLOR_PADRAO)
-        .setTitle("ATUALIZAÇÕES")
-        .setDescription(textos.join("\n\n"));
+      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle("ATUALIZAÇÕES").setDescription(textos.join("\n\n"));
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
 
-      return safeReply(interaction, { content: "✅ Atualizações enviadas!" });
+      return interaction.editReply({ content: "✅ Atualizações enviadas!" });
     }
 
     // ------------- /pix e /pix2 -------------
     if (commandName === "pix" || commandName === "pix2") {
       if (!temPermissao)
-        return safeReply(interaction, { content: "❌ Apenas STAFF." });
+        return interaction.editReply({ content: "❌ Apenas STAFF." });
 
       const valor = interaction.options.getString("valor");
-      const item =
-        commandName === "pix"
-          ? interaction.options.getString("produto")
-          : interaction.options.getString("servico");
+      const item = commandName === "pix" ? interaction.options.getString("produto") : interaction.options.getString("servico");
       const desconto = interaction.options.getString("desconto");
 
       let descricao = `<:Pix:1351222074097664111> **PIX** - ${
@@ -280,18 +225,16 @@ client.on("interactionCreate", async (interaction) => {
           ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)"
           : "leandro.hevieira@gmail.com"
       }\n\n`;
-      descricao += `<:seta:1346148222044995714> **VALOR:** ${valor}  **${
-        commandName === "pix" ? "Produto" : "Serviço"
-      }:** ${item}\n\n`;
+
+      // 🔹 Adicionado dois espaços entre valor e produto/serviço
+      descricao += `<:seta:1346148222044995714> **VALOR:** ${valor}  **${commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n`;
       descricao += "**Enviar o comprovante após o pagamento.**\n";
       if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
 
-      const embed = new EmbedBuilder()
-        .setColor("#00FF00")
-        .setDescription(descricao);
+      const embed = new EmbedBuilder().setColor("#00FF00").setDescription(descricao);
 
       await interaction.channel.send({ embeds: [embed] });
-      return safeReply(interaction, { content: "✅ PIX enviado com sucesso!" });
+      return interaction.editReply({ content: "✅ PIX enviado com sucesso!" });
     }
 
     // ------------- /cargostreamer -------------
@@ -306,11 +249,17 @@ client.on("interactionCreate", async (interaction) => {
       const mensagem = await interaction.channel.send({ embeds: [embed] });
       await mensagem.react("1353492062376558674");
 
-      return safeReply(interaction, { content: "✅ Mensagem de cargo enviada!" });
+      return interaction.editReply({ content: "✅ Mensagem de cargo enviada!" });
     }
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
-    await safeReply(interaction, { content: "❌ Ocorreu um erro." });
+
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true });
+    } else {
+      // 🔹 Evita erro de "interação já reconhecida"
+      await interaction.followUp({ content: "❌ Ocorreu um erro.", ephemeral: true });
+    }
   }
 });
 
@@ -334,9 +283,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
 const app = express();
 app.get("/", (req, res) => res.send("Bot está rodando e acordado! ✅"));
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () =>
-  console.log("🌐 Servidor web ativo para manter o Replit acordado!")
-);
+app.listen(PORT, () => console.log("🌐 Servidor web ativo!"));
 
 // ---------------- LOGIN ----------------
 client.login(TOKEN);
