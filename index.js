@@ -186,7 +186,12 @@ client.on("interactionCreate", async (interaction) => {
       const observacao = interaction.options.getString("observacao");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      let descEmbed = `**Descrição:** ${descricao}\n\n**Data:** ${data}\n\n**Horário:** ${horario}\n\n**Local:** ${local}`;
+      let descEmbed =
+        `**Descrição:** ${descricao}\n\n` +
+        `**Data:** ${data}\n\n` +
+        `**Horário:** ${horario}\n\n` +
+        `**Local:** ${local}`;
+
       if (premiacao) descEmbed += `\n\n**Premiação:** ${premiacao}`;
       if (observacao) descEmbed += `\n\n**Observação:** ${observacao}`;
 
@@ -237,18 +242,26 @@ client.on("interactionCreate", async (interaction) => {
     // --------- /pix e /pix2 ---------
     if (commandName === "pix" || commandName === "pix2") {
       const valor = interaction.options.getString("valor");
-      const item = commandName === "pix" ? interaction.options.getString("produto") : interaction.options.getString("servico");
+      const item = commandName === "pix" 
+        ? interaction.options.getString("produto") 
+        : interaction.options.getString("servico");
       const desconto = interaction.options.getString("desconto");
 
-      let descricao = `<:Pix:1351222074097664111> **PIX** - ${
-        commandName === "pix"
-          ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)"
-          : "leandro.hevieira@gmail.com"
-      }\n\n<:seta:1346148222044995714> **VALOR:** ${valor}  **${commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n**Enviar o comprovante após o pagamento.**`;
+      let descricao =
+        `<:Pix:1351222074097664111> **PIX** - ${
+          commandName === "pix"
+            ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)"
+            : "leandro.hevieira@gmail.com"
+        }\n\n` +
+        `<:seta:1346148222044995714> **VALOR:** ${valor}  **${commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n` +
+        `**Enviar o comprovante após o pagamento.**`;
 
-      if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
+      if (desconto) descricao += `\n\n*Desconto aplicado: ${desconto}%*`;
 
-      const embed = new EmbedBuilder().setColor("#00FF00").setDescription(descricao).setFooter({ text: "Atenciosamente, Condado.", iconURL: RODAPE_ICON });
+      const embed = new EmbedBuilder()
+        .setColor("#00FF00")
+        .setDescription(descricao)
+        .setFooter({ text: "Atenciosamente, Condado.", iconURL: RODAPE_ICON });
 
       await interaction.channel.send({ embeds: [embed] });
       if (!replied) await interaction.reply({ content: "✅ PIX enviado com sucesso!", ephemeral: true });
