@@ -1,4 +1,3 @@
-require("dotenv").config();
 const {
   Client,
   GatewayIntentBits,
@@ -6,7 +5,11 @@ const {
   SlashCommandBuilder,
   REST,
   Routes,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } = require("discord.js");
+require("dotenv").config();
 const express = require("express");
 
 // ---------------- CLIENTE ----------------
@@ -21,7 +24,7 @@ const client = new Client({
 });
 
 // ---------------- CONFIGURAÇÕES ----------------
-const TOKEN = process.env.DISCORD_TOKEN;
+const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_IDS = process.env.GUILD_IDS.split(","); // IDs separados por vírgula
 const COLOR_PADRAO = "#f6b21b";
@@ -51,6 +54,7 @@ const commands = [
     .addAttachmentOption((opt) =>
       opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
     ),
+
   new SlashCommandBuilder()
     .setName("evento")
     .setDescription("📅 Criar um evento")
@@ -62,6 +66,7 @@ const commands = [
     .addStringOption((opt) => opt.setName("premiacao").setDescription("Premiação do evento (opcional)").setRequired(false))
     .addStringOption((opt) => opt.setName("observacao").setDescription("Observação (opcional)").setRequired(false))
     .addAttachmentOption((opt) => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
+
   new SlashCommandBuilder()
     .setName("atualizacoes")
     .setDescription("📰 Enviar atualizações")
@@ -76,28 +81,31 @@ const commands = [
     .addStringOption((opt) => opt.setName("texto9").setDescription("Atualização 9").setRequired(false))
     .addStringOption((opt) => opt.setName("texto10").setDescription("Atualização 10").setRequired(false))
     .addAttachmentOption((opt) => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
+
   new SlashCommandBuilder().setName("cargostreamer").setDescription("Mensagem para pegar o cargo Streamer"),
+
   new SlashCommandBuilder()
     .setName("pix")
     .setDescription("💰 PIX Gabriel (STAFF)")
     .addStringOption((opt) => opt.setName("valor").setDescription("Valor").setRequired(true))
     .addStringOption((opt) => opt.setName("produto").setDescription("Produto").setRequired(true))
     .addStringOption((opt) => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
+
   new SlashCommandBuilder()
     .setName("pix2")
     .setDescription("💰 PIX Leandro (STAFF)")
     .addStringOption((opt) => opt.setName("valor").setDescription("Valor").setRequired(true))
     .addStringOption((opt) => opt.setName("servico").setDescription("Serviço").setRequired(true))
     .addStringOption((opt) => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
+
   new SlashCommandBuilder()
     .setName("entrevista")
     .setDescription("📌 Envia mensagem de aguarde entrevista"),
-].map((c) => c.toJSON());
+].map((cmd) => cmd.toJSON());
 
-// ---------------- REGISTRAR COMANDOS ----------------
+// ---------------- REGISTRAR COMANDOS EM TODAS GUILDS ----------------
 client.once("ready", async () => {
   console.log(`🤖 Bot online como ${client.user.tag}`);
-
   const rest = new REST({ version: "10" }).setToken(TOKEN);
 
   try {
@@ -114,7 +122,6 @@ client.once("ready", async () => {
 client.on("interactionCreate", async (interaction) => {
   try {
     if (!interaction.isChatInputCommand()) return;
-
     const commandName = interaction.commandName;
     const temPermissao = STAFF_ROLES.some((r) => interaction.member.roles.cache.has(r));
 
@@ -122,10 +129,12 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.deferReply({ ephemeral: true });
     }
 
+    // ------------- /aviso -------------
     if (commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao").replace(/\\n/g, "\n");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
+
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descricao);
       if (imagem) embed.setImage(imagem);
 
@@ -134,6 +143,7 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.editReply({ content: "✅ Aviso enviado!" });
     }
 
+    // ------------- /evento -------------
     if (commandName === "evento") {
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao");
@@ -156,6 +166,7 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.editReply({ content: "✅ Evento enviado!" });
     }
 
+    // ------------- /atualizacoes -------------
     if (commandName === "atualizacoes") {
       const textos = [];
       for (let i = 1; i <= 10; i++) {
@@ -173,43 +184,78 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.editReply({ content: "✅ Atualizações enviadas!" });
     }
 
-    if (commandName === "cargostreamer") {
-      await interaction.member.roles.add(STREAMER_ROLE);
-      return interaction.editReply({ content: "✅ Cargo Streamer adicionado!" });
-    }
-
+    // ------------- /pix e /pix2 -------------
     if (commandName === "pix" || commandName === "pix2") {
-      if (!temPermissao) return interaction.editReply({ content: "❌ Você não tem permissão." });
-
+      if (!temPermissao) return interaction.editReply({ content: "❌ Apenas STAFF." });
       const valor = interaction.options.getString("valor");
-      const produto = interaction.options.getString("produto") || interaction.options.getString("servico");
-      const desconto = interaction.options.getString("desconto") || null;
+      const item = commandName === "pix" ? interaction.options.getString("produto") : interaction.options.getString("servico");
+      const desconto = interaction.options.getString("desconto");
 
-      let msg = `💰 **PIX**\nProduto/Serviço: ${produto}\nValor: ${valor}`;
-      if (desconto) msg += `\nDesconto: ${desconto}%`;
+      let descricao = `<:Pix:1351222074097664111> **PIX** - ${
+        commandName === "pix"
+          ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)"
+          : "leandro.hevieira@gmail.com"
+      }\n\n<:seta:1346148222044995714> **VALOR:** ${valor}\u2003\u2003\u2003**${
+        commandName === "pix" ? "Produto" : "Serviço"
+      }:** ${item}\n\n**Enviar o comprovante após o pagamento.**\n`;
+      if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
 
-      await interaction.channel.send(msg);
-      return interaction.editReply({ content: "✅ PIX enviado!" });
+      const embed = new EmbedBuilder().setColor("#00FF00").setDescription(descricao);
+      await interaction.channel.send({ embeds: [embed] });
+      return interaction.editReply({ content: "✅ PIX enviado com sucesso!" });
     }
 
+    // ------------- /cargostreamer -------------
+    if (commandName === "cargostreamer") {
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle("Seja Streamer!")
+        .setDescription(
+          `Após uma semana, cumprindo os requisitos, você receberá os benefícios na cidade.\n\nReaja com <:Streamer:1353492062376558674> para receber o cargo Streamer!`
+        );
+
+      const mensagem = await interaction.channel.send({ embeds: [embed] });
+      await mensagem.react("1353492062376558674");
+
+      return interaction.editReply({ content: "✅ Mensagem de cargo enviada!" });
+    }
+
+    // ------------- /entrevista -------------
     if (commandName === "entrevista") {
-      await interaction.channel.send("📌 Aguarde, sua entrevista será iniciada em breve!");
-      return interaction.editReply({ content: "✅ Mensagem de entrevista enviada!" });
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle("Olá, visitantes!")
+        .setDescription(
+          "As entrevistas já estão disponíveis. Para participar, clique no botão abaixo e um membro da equipe irá atendê-lo em breve.\n\nDesejamos boa sorte!"
+        );
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setLabel("Aguarde Entrevista")
+          .setStyle(ButtonStyle.Link)
+          .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
+      );
+
+      await interaction.channel.send({ embeds: [embed], components: [row] });
+      await interaction.channel.send({ content: `<@&1136131478888124526>` });
+      return interaction.editReply({ content: "✅ Mensagem de entrevista enviada com sucesso!" });
     }
+
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
-    if (interaction.deferred || interaction.replied) {
-      interaction.editReply({ content: "❌ Ocorreu um erro." }).catch(() => {});
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true });
     } else {
-      interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true }).catch(() => {});
+      await interaction.followUp({ content: "❌ Ocorreu um erro.", ephemeral: true });
     }
   }
 });
 
-// ---------------- UPTIME ----------------
+// ---------------- EXPRESS ----------------
 const app = express();
-app.get("/", (req, res) => res.send("Bot ativo!"));
-app.listen(3000, () => console.log("🌐 Servidor web ativo para manter o bot acordado!"));
+app.get("/", (req, res) => res.send("Bot ativo! ✅"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("🌐 Servidor web ativo para manter o bot acordado!"));
 
 // ---------------- LOGIN ----------------
 client.login(TOKEN);
