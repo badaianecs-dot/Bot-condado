@@ -49,10 +49,7 @@ const commands = [
       opt.setName("titulo").setDescription("Título do aviso").setRequired(true)
     )
     .addStringOption((opt) =>
-      opt
-        .setName("descricao")
-        .setDescription("Descrição do aviso (use \\n para quebrar linha)")
-        .setRequired(true)
+      opt.setName("descricao").setDescription("Descrição do aviso (use \\n para quebrar linha)").setRequired(true)
     )
     .addAttachmentOption((opt) =>
       opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
@@ -113,6 +110,7 @@ client.once("ready", async () => {
 
   try {
     for (const guildId of GUILD_IDS) {
+      if (!guildId) continue;
       await rest.put(Routes.applicationGuildCommands(CLIENT_ID, guildId), { body: commands });
       console.log(`✅ Comandos registrados na guild ${guildId}`);
     }
@@ -133,12 +131,11 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.deferReply({ ephemeral: true });
     }
 
-    // Apenas STAFF pode usar todos os comandos
     if (!temPermissao) {
       return interaction.editReply({ content: "❌ Apenas STAFF pode usar este comando.", ephemeral: true });
     }
 
-    // ------------- /aviso -------------
+    // --------- /aviso ---------
     if (commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao").replace(/\\n/g, "\n");
@@ -149,10 +146,11 @@ client.on("interactionCreate", async (interaction) => {
 
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+
       return interaction.editReply({ content: "✅ Aviso enviado!", ephemeral: true });
     }
 
-    // ------------- /evento -------------
+    // --------- /evento ---------
     if (commandName === "evento") {
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao");
@@ -172,10 +170,11 @@ client.on("interactionCreate", async (interaction) => {
 
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+
       return interaction.editReply({ content: "✅ Evento enviado!", ephemeral: true });
     }
 
-    // ------------- /atualizacoes -------------
+    // --------- /atualizacoes ---------
     if (commandName === "atualizacoes") {
       const textos = [];
       for (let i = 1; i <= 10; i++) {
@@ -183,17 +182,20 @@ client.on("interactionCreate", async (interaction) => {
         if (txt) textos.push(txt);
       }
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
-      if (textos.length === 0) return interaction.editReply({ content: "❌ Informe pelo menos uma atualização.", ephemeral: true });
+
+      if (textos.length === 0)
+        return interaction.editReply({ content: "❌ Informe pelo menos uma atualização.", ephemeral: true });
 
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle("ATUALIZAÇÕES").setDescription(textos.join("\n\n"));
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+
       return interaction.editReply({ content: "✅ Atualizações enviadas!", ephemeral: true });
     }
 
-    // ------------- /pix e /pix2 -------------
+    // --------- /pix e /pix2 ---------
     if (commandName === "pix" || commandName === "pix2") {
       const valor = interaction.options.getString("valor");
       const item = commandName === "pix" ? interaction.options.getString("produto") : interaction.options.getString("servico");
@@ -203,17 +205,17 @@ client.on("interactionCreate", async (interaction) => {
         commandName === "pix"
           ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)"
           : "leandro.hevieira@gmail.com"
-      }\n\n<:seta:1346148222044995714> **VALOR:** ${valor}\u2003\u2003\u2003**${
-        commandName === "pix" ? "Produto" : "Serviço"
-      }:** ${item}\n\n**Enviar o comprovante após o pagamento.**\n`;
+      }\n\n<:seta:1346148222044995714> **VALOR:** ${valor}  **${commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n**Enviar o comprovante após o pagamento.**`;
+
       if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
 
       const embed = new EmbedBuilder().setColor("#00FF00").setDescription(descricao);
+
       await interaction.channel.send({ embeds: [embed] });
       return interaction.editReply({ content: "✅ PIX enviado com sucesso!", ephemeral: true });
     }
 
-    // ------------- /cargostreamer -------------
+    // --------- /cargostreamer ---------
     if (commandName === "cargostreamer") {
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
@@ -228,7 +230,7 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.editReply({ content: "✅ Mensagem de cargo enviada!", ephemeral: true });
     }
 
-    // ------------- /entrevista -------------
+    // --------- /entrevista ---------
     if (commandName === "entrevista") {
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
@@ -246,6 +248,7 @@ client.on("interactionCreate", async (interaction) => {
 
       await interaction.channel.send({ embeds: [embed], components: [row] });
       await interaction.channel.send({ content: `<@&1136131478888124526>` });
+
       return interaction.editReply({ content: "✅ Mensagem de entrevista enviada com sucesso!", ephemeral: true });
     }
 
