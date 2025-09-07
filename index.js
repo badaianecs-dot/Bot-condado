@@ -26,10 +26,7 @@ const client = new Client({
 // ---------------- CONFIGURAÇÕES ----------------
 const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
-const GUILD_IDS = [
-  process.env.GUILD_ID1,
-  process.env.GUILD_ID2
-];
+const GUILD_IDS = [process.env.GUILD_ID1, process.env.GUILD_ID2];
 const COLOR_PADRAO = "#f6b21b";
 const STREAMER_ROLE = "1150955061606895737";
 const STAFF_ROLES = [
@@ -37,7 +34,7 @@ const STAFF_ROLES = [
   "1181617285530660904",
   "1123014410496118784",
   "1197207305968701521",
-  "1207449146919882782"
+  "1207449146919882782",
 ];
 const CIDADAO_ROLE = "1136132647115030608";
 
@@ -46,68 +43,90 @@ const commands = [
   new SlashCommandBuilder()
     .setName("aviso")
     .setDescription("📣 Enviar um aviso")
-    .addStringOption(opt =>
+    .addStringOption((opt) =>
       opt.setName("titulo").setDescription("Título do aviso").setRequired(true)
     )
-    .addStringOption(opt =>
-      opt.setName("descricao").setDescription("Descrição do aviso (use \\n para quebrar linha)").setRequired(true)
+    .addStringOption((opt) =>
+      opt
+        .setName("descricao")
+        .setDescription("Descrição do aviso (use \\n para quebrar linha)")
+        .setRequired(true)
     )
-    .addAttachmentOption(opt =>
+    .addAttachmentOption((opt) =>
       opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
     )
-    .addBooleanOption(opt =>
-      opt.setName("botao_ticket")
-      .setDescription("Adicionar botão Abrir Ticket? (opcional)")
-      .setRequired(false)
+    .addBooleanOption((opt) =>
+      opt
+        .setName("botao_ticket")
+        .setDescription("Adicionar botão Abrir Ticket? (opcional)")
+        .setRequired(false)
     ),
 
   new SlashCommandBuilder()
     .setName("evento")
     .setDescription("📅 Criar um evento")
-    .addStringOption(opt => opt.setName("titulo").setDescription("Título do evento").setRequired(true))
-    .addStringOption(opt => opt.setName("descricao").setDescription("Descrição do evento").setRequired(true))
-    .addStringOption(opt => opt.setName("data").setDescription("Data do evento").setRequired(true))
-    .addStringOption(opt => opt.setName("horario").setDescription("Horário do evento").setRequired(true))
-    .addStringOption(opt => opt.setName("local").setDescription("Local do evento").setRequired(true))
-    .addStringOption(opt => opt.setName("premiacao").setDescription("Premiação do evento (opcional)").setRequired(false))
-    .addStringOption(opt => opt.setName("observacao").setDescription("Observação (opcional)").setRequired(false))
-    .addAttachmentOption(opt => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
+    .addStringOption((opt) =>
+      opt.setName("titulo").setDescription("Título do evento").setRequired(true)
+    )
+    .addStringOption((opt) =>
+      opt.setName("descricao").setDescription("Descrição do evento").setRequired(true)
+    )
+    .addStringOption((opt) =>
+      opt.setName("data").setDescription("Data do evento").setRequired(true)
+    )
+    .addStringOption((opt) =>
+      opt.setName("horario").setDescription("Horário do evento").setRequired(true)
+    )
+    .addStringOption((opt) =>
+      opt.setName("local").setDescription("Local do evento").setRequired(true)
+    )
+    .addStringOption((opt) =>
+      opt.setName("premiacao").setDescription("Premiação do evento (opcional)").setRequired(false)
+    )
+    .addStringOption((opt) =>
+      opt.setName("observacao").setDescription("Observação (opcional)").setRequired(false)
+    )
+    .addAttachmentOption((opt) =>
+      opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
+    ),
 
   new SlashCommandBuilder()
     .setName("atualizacoes")
     .setDescription("📰 Enviar atualizações")
-    .addStringOption(opt => opt.setName("texto1").setDescription("Atualização 1").setRequired(true))
-    .addStringOption(opt => opt.setName("texto2").setDescription("Atualização 2").setRequired(false))
-    .addStringOption(opt => opt.setName("texto3").setDescription("Atualização 3").setRequired(false))
-    .addStringOption(opt => opt.setName("texto4").setDescription("Atualização 4").setRequired(false))
-    .addStringOption(opt => opt.setName("texto5").setDescription("Atualização 5").setRequired(false))
-    .addStringOption(opt => opt.setName("texto6").setDescription("Atualização 6").setRequired(false))
-    .addStringOption(opt => opt.setName("texto7").setDescription("Atualização 7").setRequired(false))
-    .addStringOption(opt => opt.setName("texto8").setDescription("Atualização 8").setRequired(false))
-    .addStringOption(opt => opt.setName("texto9").setDescription("Atualização 9").setRequired(false))
-    .addStringOption(opt => opt.setName("texto10").setDescription("Atualização 10").setRequired(false))
-    .addAttachmentOption(opt => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
+    .addStringOption((opt) => opt.setName("texto1").setDescription("Atualização 1").setRequired(true))
+    .addStringOption((opt) => opt.setName("texto2").setDescription("Atualização 2").setRequired(false))
+    .addStringOption((opt) => opt.setName("texto3").setDescription("Atualização 3").setRequired(false))
+    .addStringOption((opt) => opt.setName("texto4").setDescription("Atualização 4").setRequired(false))
+    .addStringOption((opt) => opt.setName("texto5").setDescription("Atualização 5").setRequired(false))
+    .addStringOption((opt) => opt.setName("texto6").setDescription("Atualização 6").setRequired(false))
+    .addStringOption((opt) => opt.setName("texto7").setDescription("Atualização 7").setRequired(false))
+    .addStringOption((opt) => opt.setName("texto8").setDescription("Atualização 8").setRequired(false))
+    .addStringOption((opt) => opt.setName("texto9").setDescription("Atualização 9").setRequired(false))
+    .addStringOption((opt) => opt.setName("texto10").setDescription("Atualização 10").setRequired(false))
+    .addAttachmentOption((opt) =>
+      opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
+    ),
 
   new SlashCommandBuilder().setName("cargostreamer").setDescription("Mensagem para pegar o cargo Streamer"),
 
   new SlashCommandBuilder()
     .setName("pix")
     .setDescription("💰 PIX Gabriel (STAFF)")
-    .addStringOption(opt => opt.setName("valor").setDescription("Valor").setRequired(true))
-    .addStringOption(opt => opt.setName("produto").setDescription("Produto").setRequired(true))
-    .addStringOption(opt => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
+    .addStringOption((opt) => opt.setName("valor").setDescription("Valor").setRequired(true))
+    .addStringOption((opt) => opt.setName("produto").setDescription("Produto").setRequired(true))
+    .addStringOption((opt) => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
 
   new SlashCommandBuilder()
     .setName("pix2")
     .setDescription("💰 PIX Leandro (STAFF)")
-    .addStringOption(opt => opt.setName("valor").setDescription("Valor").setRequired(true))
-    .addStringOption(opt => opt.setName("servico").setDescription("Serviço").setRequired(true))
-    .addStringOption(opt => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
+    .addStringOption((opt) => opt.setName("valor").setDescription("Valor").setRequired(true))
+    .addStringOption((opt) => opt.setName("servico").setDescription("Serviço").setRequired(true))
+    .addStringOption((opt) => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
 
   new SlashCommandBuilder()
     .setName("entrevista")
     .setDescription("📌 Envia mensagem de aguarde entrevista"),
-].map(cmd => cmd.toJSON());
+].map((cmd) => cmd.toJSON());
 
 // ---------------- REGISTRAR COMANDOS ----------------
 client.once("ready", async () => {
@@ -126,18 +145,18 @@ client.once("ready", async () => {
 });
 
 // ---------------- INTERAÇÕES ----------------
-client.on("interactionCreate", async interaction => {
+client.on("interactionCreate", async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   const commandName = interaction.commandName;
-  const temPermissao = STAFF_ROLES.some(r => interaction.member.roles.cache.has(r));
+  const temPermissao = STAFF_ROLES.some((r) => interaction.member.roles.cache.has(r));
 
   const safeReply = async (content, ephemeral = true) => {
     try {
       if (interaction.deferred || interaction.replied) {
-        await interaction.followUp({ content, flags: ephemeral ? 64 : undefined }).catch(() => {});
+        await interaction.followUp({ content, flags: ephemeral ? 64 : undefined });
       } else {
-        await interaction.reply({ content, flags: ephemeral ? 64 : undefined }).catch(() => {});
+        await interaction.reply({ content, flags: ephemeral ? 64 : undefined });
       }
     } catch (err) {
       console.warn("Interação já respondida ou desconhecida:", err.message);
@@ -145,7 +164,10 @@ client.on("interactionCreate", async interaction => {
   };
 
   try {
-    if (!temPermissao) return safeReply("❌ Você não tem permissão para usar este comando.");
+    // TODOS os comandos restritos a STAFF
+    if (!temPermissao) {
+      return safeReply("❌ Você não tem permissão para usar este comando.");
+    }
 
     // --------- /evento ---------
     if (commandName === "evento") {
@@ -158,10 +180,9 @@ client.on("interactionCreate", async interaction => {
       const observacao = interaction.options.getString("observacao");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      // Texto do embed sem "Descrição:"
-      let descEmbed = `${descricao}\n\n**Data:** ${data}\n\n**Horário:** ${horario}\n\n**Local:** ${local}`;
-      if (premiacao) descEmbed += `\n\n**Premiação:** ${premiacao}`;
-      if (observacao) descEmbed += `\n\n**Observação:** ${observacao}`;
+      let descEmbed = `${descricao}\n\n**Data:** ${data}\n**Horário:** ${horario}\n**Local:** ${local}`;
+      if (premiacao) descEmbed += `\n**Premiação:** ${premiacao}`;
+      if (observacao) descEmbed += `\n**Observação:** ${observacao}`;
 
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
@@ -182,7 +203,7 @@ client.on("interactionCreate", async interaction => {
         .setColor(COLOR_PADRAO)
         .setTitle("Olá, visitantes!")
         .setDescription(
-          "As entrevistas já estão disponíveis. Para participar, clique no botão abaixo e um membro da equipe irá atendê-lo em breve.\n\nDesejamos boa sorte!"
+          "As entrevistas já estão disponíveis. Para participar, clique no botão abaixo e um membro da equipe irá atendê-lo em breve.\n\nDesejamos boa sorte! <:confirmadov:1346063774943285248>"
         );
 
       const row = new ActionRowBuilder().addComponents(
@@ -198,10 +219,9 @@ client.on("interactionCreate", async interaction => {
       return safeReply("✅ Mensagem de entrevista enviada com sucesso!");
     }
 
-    // --------- restante dos comandos (mantidos iguais) ---------
+    // --------- restante dos comandos ---------
     // /aviso, /atualizacoes, /pix, /pix2, /cargostreamer
     // [Mantidos como estavam]
-    
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
     await safeReply("❌ Ocorreu um erro.");
