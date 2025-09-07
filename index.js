@@ -26,10 +26,7 @@ const client = new Client({
 // ---------------- CONFIGURAÇÕES ----------------
 const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
-const GUILD_IDS = [
-  process.env.GUILD_ID1,
-  process.env.GUILD_ID2
-];
+const GUILD_IDS = [process.env.GUILD_ID1, process.env.GUILD_ID2];
 const COLOR_PADRAO = "#f6b21b";
 const STREAMER_ROLE = "1150955061606895737";
 const STAFF_ROLES = [
@@ -37,7 +34,7 @@ const STAFF_ROLES = [
   "1181617285530660904",
   "1123014410496118784",
   "1197207305968701521",
-  "1207449146919882782" // novo cargo adicionado
+  "1207449146919882782"
 ];
 const CIDADAO_ROLE = "1136132647115030608";
 
@@ -162,9 +159,9 @@ client.on("interactionCreate", async interaction => {
       const observacao = interaction.options.getString("observacao");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      let descEmbed = `**Descrição:** ${descricao}\n\n**Data:** ${data}\n\n**Horário:** ${horario}\n\n**Local:** ${local}`;
-      if (premiacao) descEmbed += `\n\n**Premiação:** ${premiacao}`;
-      if (observacao) descEmbed += `\n\n**Observação:** ${observacao}`;
+      let descEmbed = `**Descrição:** ${descricao}\n\n**Data:** ${data}\n**Horário:** ${horario}\n**Local:** ${local}`;
+      if (premiacao) descEmbed += `\n**Premiação:** ${premiacao}`;
+      if (observacao) descEmbed += `\n**Observação:** ${observacao}`;
 
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descEmbed);
       if (imagem) embed.setImage(imagem);
@@ -237,7 +234,7 @@ client.on("interactionCreate", async interaction => {
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder().setLabel("Aguarde Entrevista").setStyle(ButtonStyle.Link)
-        .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
+          .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
       );
 
       await interaction.channel.send({ embeds: [embed], components: [row] });
@@ -279,4 +276,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("🌐 Servidor web ativo!"));
 
 // ---------------- LOGIN ----------------
-client.login(TOKEN
+client.login(TOKEN);
