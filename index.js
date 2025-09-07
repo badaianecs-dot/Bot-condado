@@ -31,7 +31,7 @@ const STAFF_ROLES = [
   "1181617285530660904",
   "1123014410496118784",
   "1197207305968701521",
-  "1207449146919882782", // cargo extra adicionado
+  "1207449146919882782", // cargo adicionado
 ];
 const CIDADAO_ROLE = "1136132647115030608";
 
@@ -41,49 +41,40 @@ const commands = [
     .setName("aviso")
     .setDescription("📣 Enviar um aviso")
     .addStringOption((opt) =>
-      opt.setName("titulo").setDescription("Título do aviso").setRequired(true)
+      opt.setName("titulo").setDescription("Título do aviso").setRequired(true),
     )
     .addStringOption((opt) =>
       opt
         .setName("descricao")
         .setDescription("Descrição do aviso (use \\n para quebrar linha)")
-        .setRequired(true)
+        .setRequired(true),
     )
     .addAttachmentOption((opt) =>
-      opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
+      opt
+        .setName("imagem")
+        .setDescription("Imagem opcional")
+        .setRequired(false),
     ),
 
   new SlashCommandBuilder()
     .setName("evento")
     .setDescription("📅 Criar um evento")
     .addStringOption((opt) =>
-      opt.setName("titulo").setDescription("Título do evento").setRequired(true)
+      opt.setName("titulo").setDescription("Título do evento").setRequired(true),
     )
     .addStringOption((opt) =>
-      opt.setName("descricao").setDescription("Descrição do evento").setRequired(true)
+      opt.setName("descricao").setDescription("Descrição do evento").setRequired(true),
     )
-    .addStringOption((opt) =>
-      opt.setName("data").setDescription("Data do evento").setRequired(true)
-    )
-    .addStringOption((opt) =>
-      opt.setName("horario").setDescription("Horário do evento").setRequired(true)
-    )
-    .addStringOption((opt) =>
-      opt.setName("local").setDescription("Local do evento").setRequired(true)
-    )
-    .addStringOption((opt) =>
-      opt.setName("premiacao").setDescription("Premiação do evento (opcional)").setRequired(false)
-    )
-    .addStringOption((opt) =>
-      opt.setName("observacao").setDescription("Observação (opcional)").setRequired(false)
-    )
-    .addAttachmentOption((opt) =>
-      opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
-    ),
+    .addStringOption((opt) => opt.setName("data").setDescription("Data do evento").setRequired(true))
+    .addStringOption((opt) => opt.setName("horario").setDescription("Horário do evento").setRequired(true))
+    .addStringOption((opt) => opt.setName("local").setDescription("Local do evento").setRequired(true))
+    .addStringOption((opt) => opt.setName("premiacao").setDescription("Premiação do evento (opcional)").setRequired(false))
+    .addStringOption((opt) => opt.setName("observacao").setDescription("Observação (opcional)").setRequired(false))
+    .addAttachmentOption((opt) => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
 
   new SlashCommandBuilder()
     .setName("atualizacoes")
-    .setDescription("Enviar atualizações")
+    .setDescription("Enviar atualizações") // emoji removido
     .addStringOption((opt) => opt.setName("texto1").setDescription("Atualização 1").setRequired(true))
     .addStringOption((opt) => opt.setName("texto2").setDescription("Atualização 2").setRequired(false))
     .addStringOption((opt) => opt.setName("texto3").setDescription("Atualização 3").setRequired(false))
@@ -94,13 +85,9 @@ const commands = [
     .addStringOption((opt) => opt.setName("texto8").setDescription("Atualização 8").setRequired(false))
     .addStringOption((opt) => opt.setName("texto9").setDescription("Atualização 9").setRequired(false))
     .addStringOption((opt) => opt.setName("texto10").setDescription("Atualização 10").setRequired(false))
-    .addAttachmentOption((opt) =>
-      opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
-    ),
+    .addAttachmentOption((opt) => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
 
-  new SlashCommandBuilder()
-    .setName("cargostreamer")
-    .setDescription("Mensagem para pegar o cargo Streamer"),
+  new SlashCommandBuilder().setName("cargostreamer").setDescription("Mensagem para pegar o cargo Streamer"),
 
   new SlashCommandBuilder()
     .setName("pix")
@@ -117,21 +104,18 @@ const commands = [
     .addStringOption((opt) => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
 ].map((cmd) => cmd.toJSON());
 
-// ---------------- REGISTRAR COMANDOS ----------------
+// ---------------- LIMPAR COMANDOS ANTIGOS E REGISTRAR ----------------
 client.once("ready", async () => {
   console.log(`🤖 Bot online como ${client.user.tag}`);
   const rest = new REST({ version: "10" }).setToken(TOKEN);
 
   try {
-    // Limpa antigos comandos globais
     await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
     console.log("✅ Comandos globais antigos removidos");
 
-    // Limpa antigos comandos de guild
     await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] });
     console.log("✅ Comandos da guilda antigos removidos");
 
-    // Registra os comandos novos
     await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
     console.log("✅ Comandos atualizados e registrados!");
   } catch (err) {
@@ -141,12 +125,11 @@ client.once("ready", async () => {
 
 // ---------------- INTERAÇÕES ----------------
 client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
-
-  const commandName = interaction.commandName;
-  const temPermissao = STAFF_ROLES.some((r) => interaction.member.roles.cache.has(r));
-
   try {
+    if (!interaction.isChatInputCommand()) return;
+    const commandName = interaction.commandName;
+    const temPermissao = STAFF_ROLES.some((r) => interaction.member.roles.cache.has(r));
+
     if (!interaction.deferred && !interaction.replied) {
       await interaction.deferReply({ ephemeral: true });
     }
@@ -226,8 +209,10 @@ client.on("interactionCreate", async (interaction) => {
           : "leandro.hevieira@gmail.com"
       }\n\n`;
 
-      // 🔹 Adicionado dois espaços entre valor e produto/serviço
-      descricao += `<:seta:1346148222044995714> **VALOR:** ${valor}  **${commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n`;
+      // 🔹 Espaçamento fixo usando blocos de código
+      const valorText = `VALOR: ${valor}`.padEnd(20);
+      const itemText = `${commandName === "pix" ? "Produto" : "Serviço"}: ${item}`;
+      descricao += `\`\`\`\n${valorText}${itemText}\n\`\`\`\n`;
       descricao += "**Enviar o comprovante após o pagamento.**\n";
       if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
 
@@ -239,51 +224,23 @@ client.on("interactionCreate", async (interaction) => {
 
     // ------------- /cargostreamer -------------
     if (commandName === "cargostreamer") {
-      const embed = new EmbedBuilder()
-        .setColor(COLOR_PADRAO)
-        .setTitle("Seja Streamer!")
-        .setDescription(
-          `Após uma semana, cumprindo os requisitos, você receberá os benefícios na cidade.\n\nReaja com <:Streamer:1353492062376558674> para receber o cargo Streamer!`
-        );
-
-      const mensagem = await interaction.channel.send({ embeds: [embed] });
-      await mensagem.react("1353492062376558674");
-
-      return interaction.editReply({ content: "✅ Mensagem de cargo enviada!" });
+      await interaction.editReply({
+        content: "Clique no botão abaixo para pegar o cargo Streamer!",
+      });
     }
   } catch (err) {
-    console.error("Erro em interactionCreate:", err);
-
-    if (!interaction.replied && !interaction.deferred) {
-      await interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true });
-    } else {
-      // 🔹 Evita erro de "interação já reconhecida"
-      await interaction.followUp({ content: "❌ Ocorreu um erro.", ephemeral: true });
-    }
-  }
-});
-
-// ---------------- REAÇÕES ----------------
-client.on("messageReactionAdd", async (reaction, user) => {
-  try {
-    if (reaction.partial) await reaction.fetch();
-    if (reaction.message.partial) await reaction.message.fetch();
-    if (user.bot) return;
-
-    if (reaction.emoji.id === "1353492062376558674") {
-      const member = await reaction.message.guild.members.fetch(user.id);
-      await member.roles.add(STREAMER_ROLE);
-    }
-  } catch (err) {
-    console.error("Erro em messageReactionAdd:", err);
+    console.error(err);
+    if (!interaction.replied)
+      await interaction.editReply({ content: "❌ Ocorreu um erro." });
   }
 });
 
 // ---------------- EXPRESS ----------------
 const app = express();
-app.get("/", (req, res) => res.send("Bot está rodando e acordado! ✅"));
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("🌐 Servidor web ativo!"));
+app.get("/", (req, res) => res.send("Bot online!"));
+app.listen(process.env.PORT || 3000, () =>
+  console.log("🌐 Servidor web ativo para manter o bot acordado!"),
+);
 
 // ---------------- LOGIN ----------------
 client.login(TOKEN);
