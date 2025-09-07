@@ -26,7 +26,10 @@ const client = new Client({
 // ---------------- CONFIGURAÇÕES ----------------
 const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
-const GUILD_IDS = [process.env.GUILD_ID1, process.env.GUILD_ID2];
+const GUILD_IDS = [
+  process.env.GUILD_ID1,
+  process.env.GUILD_ID2
+];
 const COLOR_PADRAO = "#f6b21b";
 const STREAMER_ROLE = "1150955061606895737";
 const STAFF_ROLES = [
@@ -36,8 +39,6 @@ const STAFF_ROLES = [
   "1197207305968701521",
 ];
 const CIDADAO_ROLE = "1136132647115030608";
-const RODAPE_ICON =
-  "https://message.style/cdn/images/68f85b92c91261ecce65f4c8e2965bd56787314598cd6e5433919c5690491550.png";
 
 // ---------------- COMANDOS ----------------
 const commands = [
@@ -48,10 +49,7 @@ const commands = [
       opt.setName("titulo").setDescription("Título do aviso").setRequired(true)
     )
     .addStringOption((opt) =>
-      opt
-        .setName("descricao")
-        .setDescription("Descrição do aviso (use \\n para quebrar linha)")
-        .setRequired(true)
+      opt.setName("descricao").setDescription("Descrição do aviso (use \\n para quebrar linha)").setRequired(true)
     )
     .addAttachmentOption((opt) =>
       opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
@@ -60,30 +58,14 @@ const commands = [
   new SlashCommandBuilder()
     .setName("evento")
     .setDescription("📅 Criar um evento")
-    .addStringOption((opt) =>
-      opt.setName("titulo").setDescription("Título do evento").setRequired(true)
-    )
-    .addStringOption((opt) =>
-      opt.setName("descricao").setDescription("Descrição do evento").setRequired(true)
-    )
-    .addStringOption((opt) =>
-      opt.setName("data").setDescription("Data do evento").setRequired(true)
-    )
-    .addStringOption((opt) =>
-      opt.setName("horario").setDescription("Horário do evento").setRequired(true)
-    )
-    .addStringOption((opt) =>
-      opt.setName("local").setDescription("Local do evento").setRequired(true)
-    )
-    .addStringOption((opt) =>
-      opt.setName("premiacao").setDescription("Premiação (opcional)").setRequired(false)
-    )
-    .addStringOption((opt) =>
-      opt.setName("observacao").setDescription("Observação (opcional)").setRequired(false)
-    )
-    .addAttachmentOption((opt) =>
-      opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
-    ),
+    .addStringOption((opt) => opt.setName("titulo").setDescription("Título do evento").setRequired(true))
+    .addStringOption((opt) => opt.setName("descricao").setDescription("Descrição do evento").setRequired(true))
+    .addStringOption((opt) => opt.setName("data").setDescription("Data do evento").setRequired(true))
+    .addStringOption((opt) => opt.setName("horario").setDescription("Horário do evento").setRequired(true))
+    .addStringOption((opt) => opt.setName("local").setDescription("Local do evento").setRequired(true))
+    .addStringOption((opt) => opt.setName("premiacao").setDescription("Premiação do evento (opcional)").setRequired(false))
+    .addStringOption((opt) => opt.setName("observacao").setDescription("Observação (opcional)").setRequired(false))
+    .addAttachmentOption((opt) => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
 
   new SlashCommandBuilder()
     .setName("atualizacoes")
@@ -98,9 +80,7 @@ const commands = [
     .addStringOption((opt) => opt.setName("texto8").setDescription("Atualização 8").setRequired(false))
     .addStringOption((opt) => opt.setName("texto9").setDescription("Atualização 9").setRequired(false))
     .addStringOption((opt) => opt.setName("texto10").setDescription("Atualização 10").setRequired(false))
-    .addAttachmentOption((opt) =>
-      opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
-    ),
+    .addAttachmentOption((opt) => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
 
   new SlashCommandBuilder().setName("cargostreamer").setDescription("Mensagem para pegar o cargo Streamer"),
 
@@ -161,12 +141,7 @@ client.on("interactionCreate", async (interaction) => {
       const descricao = interaction.options.getString("descricao").replace(/\\n/g, "\n");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      const embed = new EmbedBuilder()
-        .setColor(COLOR_PADRAO)
-        .setTitle(titulo)
-        .setDescription(descricao)
-        .setFooter({ text: "Atenciosamente, Condado.", iconURL: RODAPE_ICON });
-
+      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descricao);
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
@@ -190,12 +165,7 @@ client.on("interactionCreate", async (interaction) => {
       if (premiacao) descEmbed += `\n\n**Premiação:** ${premiacao}`;
       if (observacao) descEmbed += `\n\n**Observação:** ${observacao}`;
 
-      const embed = new EmbedBuilder()
-        .setColor(COLOR_PADRAO)
-        .setTitle(titulo)
-        .setDescription(descEmbed)
-        .setFooter({ text: "Atenciosamente, Condado.", iconURL: RODAPE_ICON });
-
+      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descEmbed);
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
@@ -216,12 +186,7 @@ client.on("interactionCreate", async (interaction) => {
       if (textos.length === 0)
         return interaction.editReply({ content: "❌ Informe pelo menos uma atualização.", ephemeral: true });
 
-      const embed = new EmbedBuilder()
-        .setColor(COLOR_PADRAO)
-        .setTitle("ATUALIZAÇÕES")
-        .setDescription(textos.join("\n\n"))
-        .setFooter({ text: "Atenciosamente, Condado.", iconURL: RODAPE_ICON });
-
+      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle("ATUALIZAÇÕES").setDescription(textos.join("\n\n"));
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
@@ -236,24 +201,15 @@ client.on("interactionCreate", async (interaction) => {
       const item = commandName === "pix" ? interaction.options.getString("produto") : interaction.options.getString("servico");
       const desconto = interaction.options.getString("desconto");
 
-      // Colunas fixas para alinhamento
-      const VALOR_COL = 15;
-      const ITEM_COL = 20;
-      const paddedValor = valor.padEnd(VALOR_COL, " ");
-      const paddedItem = item.padEnd(ITEM_COL, " ");
-
       let descricao = `<:Pix:1351222074097664111> **PIX** - ${
         commandName === "pix"
           ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)"
           : "leandro.hevieira@gmail.com"
-      }\n\n<:seta:1346148222044995714> **VALOR:** ${paddedValor} **${commandName === "pix" ? "Produto" : "Serviço"}:** ${paddedItem}\n\n**Enviar o comprovante após o pagamento.**`;
+      }\n\n<:seta:1346148222044995714> **VALOR:** ${valor}  **${commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n**Enviar o comprovante após o pagamento.**`;
 
       if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
 
-      const embed = new EmbedBuilder()
-        .setColor("#00FF00")
-        .setDescription(descricao)
-        .setFooter({ text: "Atenciosamente, Condado.", iconURL: RODAPE_ICON });
+      const embed = new EmbedBuilder().setColor("#00FF00").setDescription(descricao);
 
       await interaction.channel.send({ embeds: [embed] });
       return interaction.editReply({ content: "✅ PIX enviado com sucesso!", ephemeral: true });
@@ -266,8 +222,7 @@ client.on("interactionCreate", async (interaction) => {
         .setTitle("Seja Streamer!")
         .setDescription(
           `Após uma semana, cumprindo os requisitos, você receberá os benefícios na cidade.\n\nReaja com <:Streamer:1353492062376558674> para receber o cargo Streamer!`
-        )
-        .setFooter({ text: "Atenciosamente, Condado.", iconURL: RODAPE_ICON });
+        );
 
       const mensagem = await interaction.channel.send({ embeds: [embed] });
       await mensagem.react("1353492062376558674");
@@ -282,8 +237,7 @@ client.on("interactionCreate", async (interaction) => {
         .setTitle("Olá, visitantes!")
         .setDescription(
           "As entrevistas já estão disponíveis. Para participar, clique no botão abaixo e um membro da equipe irá atendê-lo em breve.\n\nDesejamos boa sorte!"
-        )
-        .setFooter({ text: "Atenciosamente, Condado.", iconURL: RODAPE_ICON });
+        );
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -331,4 +285,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("🌐 Servidor web ativo!"));
 
 // ---------------- LOGIN ----------------
-client.login(TOKEN);
+client.login(TOKEN)
