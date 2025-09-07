@@ -54,6 +54,9 @@ const commands = [
     )
     .addAttachmentOption(opt =>
       opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
+    )
+    .addBooleanOption(opt =>
+      opt.setName("botao_ticket").setDescription("Adicionar botão Abrir Ticket?").setRequired(false)
     ),
 
   new SlashCommandBuilder()
@@ -141,18 +144,23 @@ client.on("interactionCreate", async interaction => {
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao").replace(/\\n/g, "\n");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
+      const botao_ticket = interaction.options.getBoolean("botao_ticket");
 
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descricao);
+      if (imagem) embed.setImage(imagem);
 
-      // Botão opcional Abrir Ticket
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setLabel("Abrir Ticket")
-          .setStyle(ButtonStyle.Link)
-          .setURL("https://discord.com/channels/1120401688713502772/1136126482629005353")
-      );
+      const components = [];
+      if (botao_ticket) {
+        const row = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setLabel("Abrir Ticket")
+            .setStyle(ButtonStyle.Link)
+            .setURL("https://discord.com/channels/1120401688713502772/1136126482629005353")
+        );
+        components.push(row);
+      }
 
-      await interaction.channel.send({ embeds: [embed], components: [row] });
+      await interaction.channel.send({ embeds: [embed], components });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
 
       return interaction.editReply({ content: "✅ Aviso enviado!", ephemeral: true });
@@ -169,8 +177,11 @@ client.on("interactionCreate", async interaction => {
       const observacao = interaction.options.getString("observacao");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      // Formatação antiga, espaçamento grande e sem emojis
-      let descEmbed = `${descricao}\n\nData: ${data}\n\nHorário: ${horario}\n\nLocal: ${local}`;
+      // Espaçamento grande entre linhas
+      let descEmbed = `${descricao}\n\n`;
+      descEmbed += `Data: ${data}\n\n`;
+      descEmbed += `Horário: ${horario}\n\n`;
+      descEmbed += `Local: ${local}`;
       if (premiacao) descEmbed += `\n\nPremiação: ${premiacao}`;
       if (observacao) descEmbed += `\n\nObservação: ${observacao}`;
 
@@ -215,7 +226,7 @@ client.on("interactionCreate", async interaction => {
           ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)"
           : "leandro.hevieira@gmail.com"
       }\n\n`;
-      descricao += `<:seta:1346148222044995714> **VALOR:** ${valor}\u2003\u2003\u2003**${commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n`;
+      descricao += `<:seta:1346148222044995714> **VALOR:** ${valor}   **${commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n`;
       descricao += "**Enviar o comprovante após o pagamento.**\n";
       if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
 
