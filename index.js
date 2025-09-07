@@ -54,6 +54,9 @@ const commands = [
     )
     .addAttachmentOption(opt =>
       opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
+    )
+    .addBooleanOption(opt =>
+      opt.setName("botao_ticket").setDescription("Adicionar botão de abrir ticket?").setRequired(false)
     ),
 
   new SlashCommandBuilder()
@@ -141,11 +144,24 @@ client.on("interactionCreate", async interaction => {
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao").replace(/\\n/g, "\n");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
+      const botaoTicket = interaction.options.getBoolean("botao_ticket");
 
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descricao);
       if (imagem) embed.setImage(imagem);
 
-      await interaction.channel.send({ embeds: [embed] });
+      if (botaoTicket) {
+        const row = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setLabel("Abrir Ticket")
+            .setStyle(ButtonStyle.Link)
+            .setURL("https://discord.com/channels/1120401688713502772/1136126482629005353")
+        );
+
+        await interaction.channel.send({ embeds: [embed], components: [row] });
+      } else {
+        await interaction.channel.send({ embeds: [embed] });
+      }
+
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
 
       return interaction.editReply({ content: "✅ Aviso enviado!", ephemeral: true });
