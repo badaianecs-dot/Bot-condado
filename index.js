@@ -176,10 +176,32 @@ client.on("interactionCreate", async interaction => {
       return safeReply("✅ Evento enviado!");
     }
 
-    // --------- restante dos comandos (mantidos iguais) ---------
-    // /aviso, /atualizacoes, /pix, /pix2, /cargostreamer, /entrevista
-    // [Se desejar posso atualizar todos depois, mas aqui deixei /evento alterado apenas]
+    // --------- /entrevista ---------
+    if (commandName === "entrevista") {
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle("Olá, visitantes!")
+        .setDescription(
+          "As entrevistas já estão disponíveis. Para participar, clique no botão abaixo e um membro da equipe irá atendê-lo em breve.\n\nDesejamos boa sorte!"
+        );
 
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setLabel("Aguarde Entrevista")
+          .setStyle(ButtonStyle.Link)
+          .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
+      );
+
+      await interaction.channel.send({ embeds: [embed], components: [row] });
+      await interaction.channel.send({ content: `<@&1136131478888124526>` });
+
+      return safeReply("✅ Mensagem de entrevista enviada com sucesso!");
+    }
+
+    // --------- restante dos comandos (mantidos iguais) ---------
+    // /aviso, /atualizacoes, /pix, /pix2, /cargostreamer
+    // [Mantidos como estavam]
+    
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
     await safeReply("❌ Ocorreu um erro.");
