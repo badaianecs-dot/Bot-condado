@@ -26,7 +26,10 @@ const client = new Client({
 // ---------------- CONFIGURAÇÕES ----------------
 const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
-const GUILD_IDS = [process.env.GUILD_ID1, process.env.GUILD_ID2];
+const GUILD_IDS = [
+  process.env.GUILD_ID1,
+  process.env.GUILD_ID2
+];
 const COLOR_PADRAO = "#f6b21b";
 const STREAMER_ROLE = "1150955061606895737";
 const STAFF_ROLES = [
@@ -142,10 +145,8 @@ client.on("interactionCreate", async interaction => {
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descricao);
       if (imagem) embed.setImage(imagem);
 
-      await interaction.channel.send({ 
-        content: `<@&${CIDADAO_ROLE}> @everyone`, 
-        embeds: [embed] 
-      });
+      await interaction.channel.send({ embeds: [embed] });
+      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
 
       return interaction.editReply({ content: "✅ Aviso enviado!", ephemeral: true });
     }
@@ -161,11 +162,18 @@ client.on("interactionCreate", async interaction => {
       const observacao = interaction.options.getString("observacao");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      let descEmbed = `**Descrição:** ${descricao}\n\n**Data:** ${data}\n**Horário:** ${horario}\n**Local:** ${local}`;
-      if (premiacao) descEmbed += `\n**Premiação:** ${premiacao}`;
-      if (observacao) descEmbed += `\n**Observação:** ${observacao}`;
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle(titulo)
+        .setDescription(descricao) // <-- descrição pura
+        .addFields(
+          { name: "📅 Data", value: data || "-", inline: true },
+          { name: "⏰ Horário", value: horario || "-", inline: true },
+          { name: "📍 Local", value: local || "-", inline: true },
+          ...(premiacao ? [{ name: "🏆 Premiação", value: premiacao, inline: false }] : []),
+          ...(observacao ? [{ name: "⚠️ Observação", value: observacao, inline: false }] : [])
+        );
 
-      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descEmbed);
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ 
@@ -191,10 +199,8 @@ client.on("interactionCreate", async interaction => {
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle("📰 ATUALIZAÇÕES").setDescription(textos.join("\n\n"));
       if (imagem) embed.setImage(imagem);
 
-      await interaction.channel.send({ 
-        content: `<@&${CIDADAO_ROLE}> @everyone`, 
-        embeds: [embed] 
-      });
+      await interaction.channel.send({ embeds: [embed] });
+      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
 
       return interaction.editReply({ content: "✅ Atualizações enviadas!", ephemeral: true });
     }
