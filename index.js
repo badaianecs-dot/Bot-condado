@@ -151,7 +151,7 @@ client.on("interactionCreate", async interaction => {
       return interaction.editReply({ content: "✅ Aviso enviado!", ephemeral: true });
     }
 
-    // --------- /evento ---------
+    // --------- /evento (atualizado) ---------
     if (commandName === "evento") {
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao");
@@ -162,24 +162,19 @@ client.on("interactionCreate", async interaction => {
       const observacao = interaction.options.getString("observacao");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
+      let textoEmbed = `${descricao}\n\nData: ${data}\nHorário: ${horario}\nLocal: ${local}`;
+      if (premiacao) textoEmbed += `\nPremiação: ${premiacao}`;
+      if (observacao) textoEmbed += `\nObservação: ${observacao}`;
+
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
         .setTitle(titulo)
-        .setDescription(descricao) // <-- descrição pura
-        .addFields(
-          { name: "📅 Data", value: data || "-", inline: true },
-          { name: "⏰ Horário", value: horario || "-", inline: true },
-          { name: "📍 Local", value: local || "-", inline: true },
-          ...(premiacao ? [{ name: "🏆 Premiação", value: premiacao, inline: false }] : []),
-          ...(observacao ? [{ name: "⚠️ Observação", value: observacao, inline: false }] : [])
-        );
+        .setDescription(textoEmbed);
 
       if (imagem) embed.setImage(imagem);
 
-      await interaction.channel.send({ 
-        content: `<@&${CIDADAO_ROLE}> @everyone`, 
-        embeds: [embed] 
-      });
+      await interaction.channel.send({ embeds: [embed] });
+      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
 
       return interaction.editReply({ content: "✅ Evento enviado!", ephemeral: true });
     }
@@ -246,7 +241,7 @@ client.on("interactionCreate", async interaction => {
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder().setLabel("Aguarde Entrevista").setStyle(ButtonStyle.Link)
-          .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
+        .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
       );
 
       await interaction.channel.send({ embeds: [embed], components: [row] });
