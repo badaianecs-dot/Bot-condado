@@ -1,11 +1,4 @@
-const {
-  Client,
-  GatewayIntentBits,
-  EmbedBuilder,
-  SlashCommandBuilder,
-  REST,
-  Routes,
-} = require("discord.js");
+const { Client, GatewayIntentBits, EmbedBuilder, SlashCommandBuilder, REST, Routes } = require("discord.js");
 require("dotenv").config();
 const express = require("express");
 
@@ -31,7 +24,7 @@ const STAFF_ROLES = [
   "1181617285530660904",
   "1123014410496118784",
   "1197207305968701521",
-  "1207449146919882782", // cargo adicionado
+  "1207449146919882782", // novo cargo adicionado
 ];
 const CIDADAO_ROLE = "1136132647115030608";
 
@@ -41,53 +34,86 @@ const commands = [
     .setName("aviso")
     .setDescription("📣 Enviar um aviso")
     .addStringOption((opt) =>
-      opt.setName("titulo").setDescription("Título do aviso").setRequired(true),
+      opt.setName("titulo").setDescription("Título do aviso").setRequired(true)
     )
     .addStringOption((opt) =>
       opt
         .setName("descricao")
         .setDescription("Descrição do aviso (use \\n para quebrar linha)")
-        .setRequired(true),
+        .setRequired(true)
     )
     .addAttachmentOption((opt) =>
-      opt
-        .setName("imagem")
-        .setDescription("Imagem opcional")
-        .setRequired(false),
+      opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
     ),
 
   new SlashCommandBuilder()
     .setName("evento")
     .setDescription("📅 Criar um evento")
     .addStringOption((opt) =>
-      opt.setName("titulo").setDescription("Título do evento").setRequired(true),
+      opt.setName("titulo").setDescription("Título do evento").setRequired(true)
     )
     .addStringOption((opt) =>
-      opt.setName("descricao").setDescription("Descrição do evento").setRequired(true),
+      opt.setName("descricao").setDescription("Descrição do evento").setRequired(true)
     )
-    .addStringOption((opt) => opt.setName("data").setDescription("Data do evento").setRequired(true))
-    .addStringOption((opt) => opt.setName("horario").setDescription("Horário do evento").setRequired(true))
-    .addStringOption((opt) => opt.setName("local").setDescription("Local do evento").setRequired(true))
-    .addStringOption((opt) => opt.setName("premiacao").setDescription("Premiação do evento (opcional)").setRequired(false))
-    .addStringOption((opt) => opt.setName("observacao").setDescription("Observação (opcional)").setRequired(false))
-    .addAttachmentOption((opt) => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
+    .addStringOption((opt) =>
+      opt.setName("data").setDescription("Data do evento").setRequired(true)
+    )
+    .addStringOption((opt) =>
+      opt.setName("horario").setDescription("Horário do evento").setRequired(true)
+    )
+    .addStringOption((opt) =>
+      opt.setName("local").setDescription("Local do evento").setRequired(true)
+    )
+    .addStringOption((opt) =>
+      opt.setName("premiacao").setDescription("Premiação do evento (opcional)").setRequired(false)
+    )
+    .addStringOption((opt) =>
+      opt.setName("observacao").setDescription("Observação (opcional)").setRequired(false)
+    )
+    .addAttachmentOption((opt) =>
+      opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
+    ),
 
   new SlashCommandBuilder()
     .setName("atualizacoes")
-    .setDescription("Enviar atualizações") // emoji removido
-    .addStringOption((opt) => opt.setName("texto1").setDescription("Atualização 1").setRequired(true))
-    .addStringOption((opt) => opt.setName("texto2").setDescription("Atualização 2").setRequired(false))
-    .addStringOption((opt) => opt.setName("texto3").setDescription("Atualização 3").setRequired(false))
-    .addStringOption((opt) => opt.setName("texto4").setDescription("Atualização 4").setRequired(false))
-    .addStringOption((opt) => opt.setName("texto5").setDescription("Atualização 5").setRequired(false))
-    .addStringOption((opt) => opt.setName("texto6").setDescription("Atualização 6").setRequired(false))
-    .addStringOption((opt) => opt.setName("texto7").setDescription("Atualização 7").setRequired(false))
-    .addStringOption((opt) => opt.setName("texto8").setDescription("Atualização 8").setRequired(false))
-    .addStringOption((opt) => opt.setName("texto9").setDescription("Atualização 9").setRequired(false))
-    .addStringOption((opt) => opt.setName("texto10").setDescription("Atualização 10").setRequired(false))
-    .addAttachmentOption((opt) => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
+    .setDescription("Enviar atualizações")
+    .addStringOption((opt) =>
+      opt.setName("texto1").setDescription("Atualização 1").setRequired(true)
+    )
+    .addStringOption((opt) =>
+      opt.setName("texto2").setDescription("Atualização 2").setRequired(false)
+    )
+    .addStringOption((opt) =>
+      opt.setName("texto3").setDescription("Atualização 3").setRequired(false)
+    )
+    .addStringOption((opt) =>
+      opt.setName("texto4").setDescription("Atualização 4").setRequired(false)
+    )
+    .addStringOption((opt) =>
+      opt.setName("texto5").setDescription("Atualização 5").setRequired(false)
+    )
+    .addStringOption((opt) =>
+      opt.setName("texto6").setDescription("Atualização 6").setRequired(false)
+    )
+    .addStringOption((opt) =>
+      opt.setName("texto7").setDescription("Atualização 7").setRequired(false)
+    )
+    .addStringOption((opt) =>
+      opt.setName("texto8").setDescription("Atualização 8").setRequired(false)
+    )
+    .addStringOption((opt) =>
+      opt.setName("texto9").setDescription("Atualização 9").setRequired(false)
+    )
+    .addStringOption((opt) =>
+      opt.setName("texto10").setDescription("Atualização 10").setRequired(false)
+    )
+    .addAttachmentOption((opt) =>
+      opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
+    ),
 
-  new SlashCommandBuilder().setName("cargostreamer").setDescription("Mensagem para pegar o cargo Streamer"),
+  new SlashCommandBuilder()
+    .setName("cargostreamer")
+    .setDescription("Mensagem para pegar o cargo Streamer"),
 
   new SlashCommandBuilder()
     .setName("pix")
@@ -104,20 +130,14 @@ const commands = [
     .addStringOption((opt) => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
 ].map((cmd) => cmd.toJSON());
 
-// ---------------- LIMPAR COMANDOS ANTIGOS E REGISTRAR ----------------
+// ---------------- REGISTRAR COMANDOS ----------------
 client.once("ready", async () => {
   console.log(`🤖 Bot online como ${client.user.tag}`);
   const rest = new REST({ version: "10" }).setToken(TOKEN);
 
   try {
-    await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
-    console.log("✅ Comandos globais antigos removidos");
-
-    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] });
-    console.log("✅ Comandos da guilda antigos removidos");
-
     await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
-    console.log("✅ Comandos atualizados e registrados!");
+    console.log("✅ Comandos registrados na guilda!");
   } catch (err) {
     console.error("❌ Erro ao registrar comandos:", err);
   }
@@ -127,6 +147,7 @@ client.once("ready", async () => {
 client.on("interactionCreate", async (interaction) => {
   try {
     if (!interaction.isChatInputCommand()) return;
+
     const commandName = interaction.commandName;
     const temPermissao = STAFF_ROLES.some((r) => interaction.member.roles.cache.has(r));
 
@@ -146,7 +167,6 @@ client.on("interactionCreate", async (interaction) => {
 
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-
       return interaction.editReply({ content: "✅ Aviso enviado!" });
     }
 
@@ -190,14 +210,12 @@ client.on("interactionCreate", async (interaction) => {
 
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-
       return interaction.editReply({ content: "✅ Atualizações enviadas!" });
     }
 
     // ------------- /pix e /pix2 -------------
     if (commandName === "pix" || commandName === "pix2") {
-      if (!temPermissao)
-        return interaction.editReply({ content: "❌ Apenas STAFF." });
+      if (!temPermissao) return interaction.editReply({ content: "❌ Apenas STAFF." });
 
       const valor = interaction.options.getString("valor");
       const item = commandName === "pix" ? interaction.options.getString("produto") : interaction.options.getString("servico");
@@ -209,10 +227,8 @@ client.on("interactionCreate", async (interaction) => {
           : "leandro.hevieira@gmail.com"
       }\n\n`;
 
-      // 🔹 Espaçamento fixo usando blocos de código
-      const valorText = `VALOR: ${valor}`.padEnd(20);
-      const itemText = `${commandName === "pix" ? "Produto" : "Serviço"}: ${item}`;
-      descricao += `\`\`\`\n${valorText}${itemText}\n\`\`\`\n`;
+      // 🔹 espaçamento antigo
+      descricao += `VALOR: ${valor}         ${commandName === "pix" ? "Produto" : "Serviço"}: ${item}\n`;
       descricao += "**Enviar o comprovante após o pagamento.**\n";
       if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
 
@@ -224,23 +240,28 @@ client.on("interactionCreate", async (interaction) => {
 
     // ------------- /cargostreamer -------------
     if (commandName === "cargostreamer") {
-      await interaction.editReply({
-        content: "Clique no botão abaixo para pegar o cargo Streamer!",
-      });
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle("Seja Streamer!")
+        .setDescription(
+          `Após uma semana, cumprindo os requisitos, você receberá os benefícios na cidade.\n\nReaja com <:Streamer:1353492062376558674> para receber o cargo Streamer!`
+        );
+
+      const mensagem = await interaction.channel.send({ embeds: [embed] });
+      await mensagem.react("1353492062376558674");
+
+      return interaction.editReply({ content: "✅ Mensagem de cargo enviada!" });
     }
   } catch (err) {
-    console.error(err);
-    if (!interaction.replied)
-      await interaction.editReply({ content: "❌ Ocorreu um erro." });
+    console.error("❌ Erro na interação:", err);
+    if (!interaction.replied) await interaction.editReply({ content: "❌ Ocorreu um erro." });
   }
 });
 
-// ---------------- EXPRESS ----------------
-const app = express();
-app.get("/", (req, res) => res.send("Bot online!"));
-app.listen(process.env.PORT || 3000, () =>
-  console.log("🌐 Servidor web ativo para manter o bot acordado!"),
-);
-
 // ---------------- LOGIN ----------------
 client.login(TOKEN);
+
+// ---------------- SERVIÇO WEB PARA MANTER ONLINE ----------------
+const app = express();
+app.get("/", (req, res) => res.send("Bot ativo!"));
+app.listen(process.env.PORT || 3000);
