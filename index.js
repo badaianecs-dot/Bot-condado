@@ -8,7 +8,7 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  InteractionResponseFlags
+  InteractionResponseFlags,
 } = require("discord.js");
 require("dotenv").config();
 const express = require("express");
@@ -27,7 +27,7 @@ const client = new Client({
 // ---------------- CONFIGURAÇÕES ----------------
 const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
-const GUILD_ID = process.env.GUILD_ID;
+const GUILD_IDS = process.env.GUILD_IDS.split(",");
 const COLOR_PADRAO = "#f6b21b";
 const STREAMER_ROLE = "1150955061606895737";
 const STAFF_ROLES = [
@@ -55,7 +55,6 @@ const commands = [
     .addAttachmentOption((opt) =>
       opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
     ),
-
   new SlashCommandBuilder()
     .setName("evento")
     .setDescription("📅 Criar um evento")
@@ -67,7 +66,6 @@ const commands = [
     .addStringOption((opt) => opt.setName("premiacao").setDescription("Premiação do evento (opcional)").setRequired(false))
     .addStringOption((opt) => opt.setName("observacao").setDescription("Observação (opcional)").setRequired(false))
     .addAttachmentOption((opt) => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
-
   new SlashCommandBuilder()
     .setName("atualizacoes")
     .setDescription("📰 Enviar atualizações")
@@ -82,37 +80,34 @@ const commands = [
     .addStringOption((opt) => opt.setName("texto9").setDescription("Atualização 9").setRequired(false))
     .addStringOption((opt) => opt.setName("texto10").setDescription("Atualização 10").setRequired(false))
     .addAttachmentOption((opt) => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
-
   new SlashCommandBuilder().setName("cargostreamer").setDescription("Mensagem para pegar o cargo Streamer"),
-
   new SlashCommandBuilder()
     .setName("pix")
     .setDescription("💰 PIX Gabriel (STAFF)")
     .addStringOption((opt) => opt.setName("valor").setDescription("Valor").setRequired(true))
     .addStringOption((opt) => opt.setName("produto").setDescription("Produto").setRequired(true))
     .addStringOption((opt) => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
-
   new SlashCommandBuilder()
     .setName("pix2")
     .setDescription("💰 PIX Leandro (STAFF)")
     .addStringOption((opt) => opt.setName("valor").setDescription("Valor").setRequired(true))
     .addStringOption((opt) => opt.setName("servico").setDescription("Serviço").setRequired(true))
     .addStringOption((opt) => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
-
   new SlashCommandBuilder()
     .setName("entrevista")
     .setDescription("📌 Envia mensagem de aguarde entrevista"),
 ].map((cmd) => cmd.toJSON());
 
-// ---------------- LIMPAR COMANDOS ANTIGOS E REGISTRAR ----------------
-client.once("ready", async () => {
+// ---------------- REGISTRAR COMANDOS ----------------
+client.once("clientReady", async () => {
   console.log(`🤖 Bot online como ${client.user.tag}`);
   const rest = new REST({ version: "10" }).setToken(TOKEN);
 
   try {
-    await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
-    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
-    console.log("✅ Comandos atualizados e registrados!");
+    for (const guildId of GUILD_IDS) {
+      await rest.put(Routes.applicationGuildCommands(CLIENT_ID, guildId), { body: commands });
+      console.log(`✅ Comandos registrados na guild ${guildId}`);
+    }
   } catch (err) {
     console.error("❌ Erro ao registrar comandos:", err);
   }
@@ -126,19 +121,10 @@ client.on("interactionCreate", async (interaction) => {
     const commandName = interaction.commandName;
     const temPermissao = STAFF_ROLES.some((r) => interaction.member.roles.cache.has(r));
 
-    // Bloquear usuários que não são STAFF
-    if (!temPermissao) {
-      return interaction.reply({
-        content: "❌ Apenas STAFF pode usar este comando.",
-        flags: InteractionResponseFlags.Ephemeral
-      });
-    }
+    if (!temPermissao)
+      return interaction.reply({ content: "❌ Apenas STAFF pode usar este comando.", flags: InteractionResponseFlags.Ephemeral });
 
-    // ---------------- COMANDOS ----------------
-    if (!interaction.deferred && !interaction.replied) {
-      await interaction.deferReply({ flags: InteractionResponseFlags.Ephemeral });
-    }
-
+    // --------- COMANDOS ---------
     if (commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao").replace(/\\n/g, "\n");
@@ -149,7 +135,7 @@ client.on("interactionCreate", async (interaction) => {
 
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-      return interaction.editReply({ content: "✅ Aviso enviado!" });
+      return interaction.reply({ content: "✅ Aviso enviado!", flags: InteractionResponseFlags.Ephemeral });
     }
 
     if (commandName === "evento") {
@@ -171,7 +157,7 @@ client.on("interactionCreate", async (interaction) => {
 
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-      return interaction.editReply({ content: "✅ Evento enviado!" });
+      return interaction.reply({ content: "✅ Evento enviado!", flags: InteractionResponseFlags.Ephemeral });
     }
 
     if (commandName === "atualizacoes") {
@@ -181,14 +167,14 @@ client.on("interactionCreate", async (interaction) => {
         if (txt) textos.push(txt);
       }
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
-      if (textos.length === 0) return interaction.editReply({ content: "❌ Informe pelo menos uma atualização." });
+      if (textos.length === 0) return interaction.reply({ content: "❌ Informe pelo menos uma atualização.", flags: InteractionResponseFlags.Ephemeral });
 
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle("ATUALIZAÇÕES").setDescription(textos.join("\n\n"));
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-      return interaction.editReply({ content: "✅ Atualizações enviadas!" });
+      return interaction.reply({ content: "✅ Atualizações enviadas!", flags: InteractionResponseFlags.Ephemeral });
     }
 
     if (commandName === "pix" || commandName === "pix2") {
@@ -207,7 +193,7 @@ client.on("interactionCreate", async (interaction) => {
 
       const embed = new EmbedBuilder().setColor("#00FF00").setDescription(descricao);
       await interaction.channel.send({ embeds: [embed] });
-      return interaction.editReply({ content: "✅ PIX enviado com sucesso!" });
+      return interaction.reply({ content: "✅ PIX enviado com sucesso!", flags: InteractionResponseFlags.Ephemeral });
     }
 
     if (commandName === "cargostreamer") {
@@ -221,7 +207,7 @@ client.on("interactionCreate", async (interaction) => {
       const mensagem = await interaction.channel.send({ embeds: [embed] });
       await mensagem.react("1353492062376558674");
 
-      return interaction.editReply({ content: "✅ Mensagem de cargo enviada!" });
+      return interaction.reply({ content: "✅ Mensagem de cargo enviada!", flags: InteractionResponseFlags.Ephemeral });
     }
 
     if (commandName === "entrevista") {
@@ -241,15 +227,12 @@ client.on("interactionCreate", async (interaction) => {
 
       await interaction.channel.send({ embeds: [embed], components: [row] });
       await interaction.channel.send({ content: `<@&1136131478888124526>` });
-      return interaction.editReply({ content: "✅ Mensagem de entrevista enviada com sucesso!" });
+      return interaction.reply({ content: "✅ Mensagem de entrevista enviada!", flags: InteractionResponseFlags.Ephemeral });
     }
-
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
-    if (!interaction.replied && !interaction.deferred) {
+    if (!interaction.replied) {
       await interaction.reply({ content: "❌ Ocorreu um erro.", flags: InteractionResponseFlags.Ephemeral });
-    } else {
-      await interaction.followUp({ content: "❌ Ocorreu um erro.", flags: InteractionResponseFlags.Ephemeral });
     }
   }
 });
@@ -274,7 +257,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
 const app = express();
 app.get("/", (req, res) => res.send("Bot está rodando e acordado! ✅"));
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("🌐 Servidor web ativo para manter o Replit acordado!"));
+app.listen(PORT, () => console.log(`🌐 Servidor web ativo na porta ${PORT}`));
 
 // ---------------- LOGIN ----------------
 client.login(TOKEN);
