@@ -181,75 +181,6 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.deferReply({ ephemeral: true });
     }
 
-    // ------------- /aviso -------------
-    if (commandName === "aviso") {
-      const titulo = interaction.options.getString("titulo");
-      const descricaoRaw = interaction.options.getString("descricao");
-      const descricao = descricaoRaw.replace(/\\n/g, "\n");
-      const imagem = interaction.options.getAttachment("imagem")?.url || null;
-
-      const embed = new EmbedBuilder()
-        .setColor(COLOR_PADRAO)
-        .setTitle(titulo)
-        .setDescription(descricao);
-      if (imagem) embed.setImage(imagem);
-
-      await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-
-      return interaction.editReply({ content: "✅ Aviso enviado!" });
-    }
-
-    // ------------- /evento -------------
-    if (commandName === "evento") {
-      const titulo = interaction.options.getString("titulo");
-      const descricao = interaction.options.getString("descricao");
-      const data = interaction.options.getString("data");
-      const horario = interaction.options.getString("horario");
-      const local = interaction.options.getString("local");
-      const premiacao = interaction.options.getString("premiacao");
-      const observacao = interaction.options.getString("observacao");
-      const imagem = interaction.options.getAttachment("imagem")?.url || null;
-
-      let descEmbed = `**Descrição:** ${descricao}\n\n**Data:** ${data}\n\n**Horário:** ${horario}\n\n**Local:** ${local}`;
-      if (premiacao) descEmbed += `\n\n**Premiação:** ${premiacao}`;
-      if (observacao) descEmbed += `\n\n**Observação:** ${observacao}`;
-
-      const embed = new EmbedBuilder()
-        .setColor(COLOR_PADRAO)
-        .setTitle(titulo)
-        .setDescription(descEmbed);
-      if (imagem) embed.setImage(imagem);
-
-      await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-      return interaction.editReply({ content: "✅ Evento enviado!" });
-    }
-
-    // ------------- /atualizacoes -------------
-    if (commandName === "atualizacoes") {
-      const textos = [];
-      for (let i = 1; i <= 10; i++) {
-        const txt = interaction.options.getString(`texto${i}`);
-        if (txt) textos.push(txt);
-      }
-      const imagem = interaction.options.getAttachment("imagem")?.url || null;
-
-      if (textos.length === 0)
-        return interaction.editReply({ content: "❌ Informe pelo menos uma atualização." });
-
-      const embed = new EmbedBuilder()
-        .setColor(COLOR_PADRAO)
-        .setTitle("ATUALIZAÇÕES") // sem emoji
-        .setDescription(textos.join("\n\n"));
-      if (imagem) embed.setImage(imagem);
-
-      await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-
-      return interaction.editReply({ content: "✅ Atualizações enviadas!" });
-    }
-
     // ------------- /pix e /pix2 -------------
     if (commandName === "pix" || commandName === "pix2") {
       if (!temPermissao)
@@ -269,7 +200,7 @@ client.on("interactionCreate", async (interaction) => {
           : "leandro.hevieira@gmail.com"
       }\n\n`;
 
-      descricao += `VALOR: ${valor}\n\n${commandName === "pix" ? "Produto" : "Serviço"}: ${item}\n\n`;
+      descricao += `➡️ VALOR: ${valor}\n\n➡️ ${commandName === "pix" ? "Produto" : "Serviço"}: ${item}\n\n`;
       descricao += "**Enviar o comprovante após o pagamento.**\n\n";
       if (desconto) descricao += `*Desconto aplicado: ${desconto}%*\n\n`;
 
@@ -279,21 +210,6 @@ client.on("interactionCreate", async (interaction) => {
 
       await interaction.channel.send({ embeds: [embed] });
       return interaction.editReply({ content: "✅ PIX enviado com sucesso!" });
-    }
-
-    // ------------- /cargostreamer -------------
-    if (commandName === "cargostreamer") {
-      const embed = new EmbedBuilder()
-        .setColor(COLOR_PADRAO)
-        .setTitle("Seja Streamer!")
-        .setDescription(
-          `Após uma semana, cumprindo os requisitos, você receberá os benefícios na cidade.\n\nReaja com <:Streamer:1353492062376558674> para receber o cargo Streamer!`
-        );
-
-      const mensagem = await interaction.channel.send({ embeds: [embed] });
-      await mensagem.react("1353492062376558674");
-
-      return interaction.editReply({ content: "✅ Mensagem de cargo enviada!" });
     }
 
   } catch (err) {
