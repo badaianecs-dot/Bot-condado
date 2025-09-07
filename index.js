@@ -162,7 +162,8 @@ client.on("interactionCreate", async interaction => {
       const observacao = interaction.options.getString("observacao");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      let descEmbed = `**Descrição:** ${descricao}\n\n**Data:** ${data}\n\n**Horário:** ${horario}\n\n**Local:** ${local}`;
+      // Mantendo todos os campos com títulos, exceto a descrição que fica pura
+      let descEmbed = `${descricao}\n\n**Data:** ${data}\n\n**Horário:** ${horario}\n\n**Local:** ${local}`;
       if (premiacao) descEmbed += `\n\n**Premiação:** ${premiacao}`;
       if (observacao) descEmbed += `\n\n**Observação:** ${observacao}`;
 
@@ -279,4 +280,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("🌐 Servidor web ativo!"));
 
 // ---------------- LOGIN ----------------
-client.login(TOKEN)
+client.login(TOKEN);
