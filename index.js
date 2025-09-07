@@ -1,3 +1,4 @@
+require("dotenv").config();
 const {
   Client,
   GatewayIntentBits,
@@ -5,11 +6,7 @@ const {
   SlashCommandBuilder,
   REST,
   Routes,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
 } = require("discord.js");
-require("dotenv").config();
 const express = require("express");
 
 // ---------------- CLIENTE ----------------
@@ -26,7 +23,7 @@ const client = new Client({
 // ---------------- CONFIGURAÇÕES ----------------
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
-const GUILD_ID = process.env.GUILD_ID;
+const GUILD_IDS = process.env.GUILD_IDS.split(","); // IDs separados por vírgula
 const COLOR_PADRAO = "#f6b21b";
 const STREAMER_ROLE = "1150955061606895737";
 const STAFF_ROLES = [
@@ -54,7 +51,6 @@ const commands = [
     .addAttachmentOption((opt) =>
       opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
     ),
-
   new SlashCommandBuilder()
     .setName("evento")
     .setDescription("📅 Criar um evento")
@@ -66,7 +62,6 @@ const commands = [
     .addStringOption((opt) => opt.setName("premiacao").setDescription("Premiação do evento (opcional)").setRequired(false))
     .addStringOption((opt) => opt.setName("observacao").setDescription("Observação (opcional)").setRequired(false))
     .addAttachmentOption((opt) => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
-
   new SlashCommandBuilder()
     .setName("atualizacoes")
     .setDescription("📰 Enviar atualizações")
@@ -81,37 +76,35 @@ const commands = [
     .addStringOption((opt) => opt.setName("texto9").setDescription("Atualização 9").setRequired(false))
     .addStringOption((opt) => opt.setName("texto10").setDescription("Atualização 10").setRequired(false))
     .addAttachmentOption((opt) => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
-
   new SlashCommandBuilder().setName("cargostreamer").setDescription("Mensagem para pegar o cargo Streamer"),
-
   new SlashCommandBuilder()
     .setName("pix")
     .setDescription("💰 PIX Gabriel (STAFF)")
     .addStringOption((opt) => opt.setName("valor").setDescription("Valor").setRequired(true))
     .addStringOption((opt) => opt.setName("produto").setDescription("Produto").setRequired(true))
     .addStringOption((opt) => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
-
   new SlashCommandBuilder()
     .setName("pix2")
     .setDescription("💰 PIX Leandro (STAFF)")
     .addStringOption((opt) => opt.setName("valor").setDescription("Valor").setRequired(true))
     .addStringOption((opt) => opt.setName("servico").setDescription("Serviço").setRequired(true))
     .addStringOption((opt) => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
-
   new SlashCommandBuilder()
     .setName("entrevista")
     .setDescription("📌 Envia mensagem de aguarde entrevista"),
-].map((cmd) => cmd.toJSON());
+].map((c) => c.toJSON());
 
 // ---------------- REGISTRAR COMANDOS ----------------
 client.once("ready", async () => {
   console.log(`🤖 Bot online como ${client.user.tag}`);
+
   const rest = new REST({ version: "10" }).setToken(TOKEN);
 
   try {
-    await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] }); // limpa global
-    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
-    console.log("✅ Comandos registrados apenas nas guilds permitidas!");
+    for (const guildId of GUILD_IDS) {
+      await rest.put(Routes.applicationGuildCommands(CLIENT_ID, guildId), { body: commands });
+      console.log(`✅ Comandos registrados na guild ${guildId}`);
+    }
   } catch (err) {
     console.error("❌ Erro ao registrar comandos:", err);
   }
@@ -125,23 +118,19 @@ client.on("interactionCreate", async (interaction) => {
     const commandName = interaction.commandName;
     const temPermissao = STAFF_ROLES.some((r) => interaction.member.roles.cache.has(r));
 
-    // defer
     if (!interaction.deferred && !interaction.replied) {
       await interaction.deferReply({ ephemeral: true });
     }
 
-    // ---------------- COMANDOS ----------------
     if (commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao").replace(/\\n/g, "\n");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
-
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descricao);
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-
       return interaction.editReply({ content: "✅ Aviso enviado!" });
     }
 
@@ -164,7 +153,6 @@ client.on("interactionCreate", async (interaction) => {
 
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-
       return interaction.editReply({ content: "✅ Evento enviado!" });
     }
 
@@ -182,7 +170,6 @@ client.on("interactionCreate", async (interaction) => {
 
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-
       return interaction.editReply({ content: "✅ Atualizações enviadas!" });
     }
 
