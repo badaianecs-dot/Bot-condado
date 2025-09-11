@@ -142,7 +142,15 @@ client.on("interactionCreate", async interaction => {
       const descricao = interaction.options.getString("descricao").replace(/\\n/g, "\n");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descricao);
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle(titulo)
+        .setDescription(descricao)
+        .setFooter({
+          text: "Atenciosamente, Condado.",
+          iconURL: "https://message.style/cdn/images/68f85b92c91261ecce65f4c8e2965bd56787314598cd6e5433919c5690491550.png"
+        });
+
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
