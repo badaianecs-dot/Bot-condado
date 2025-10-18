@@ -29,7 +29,7 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMembers, // ESSENCIAL para interaction.member
+    GatewayIntentBits.GuildMembers, 
   ],
   partials: [Partials.Channel],
 });
@@ -99,6 +99,7 @@ client.once("ready", async () => {
 // ==================== INTERAÇÕES ====================
 client.on("interactionCreate", async interaction => {
   try {
+
     // ---------- /aviso ----------
     if (interaction.isChatInputCommand() && interaction.commandName === "aviso") {
       const member = interaction.member || await interaction.guild.members.fetch(interaction.user.id);
@@ -139,6 +140,7 @@ client.on("interactionCreate", async interaction => {
 
       if (imagem) embed.setImage(imagem);
 
+      // Embed + menção em UMA única mensagem
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone`, embeds: [embed] });
 
       return interaction.reply({ content: "✅ Aviso enviado com sucesso!", ephemeral: true });
