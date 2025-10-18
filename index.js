@@ -29,7 +29,7 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMembers, // necessário para interaction.member
+    GatewayIntentBits.GuildMembers, // ESSENCIAL para interaction.member
   ],
   partials: [Partials.Channel],
 });
@@ -99,11 +99,14 @@ client.once("ready", async () => {
 // ==================== INTERAÇÕES ====================
 client.on("interactionCreate", async interaction => {
   try {
-    const isStaff = STAFF_ROLES.some(r => interaction.member?.roles.cache.has(r));
-
     // ---------- MODAL SUBMIT ----------
     if (interaction.isModalSubmit() && interaction.customId === "modalAviso") {
-      if (!isStaff) return interaction.reply({ content: "❌ Você não tem permissão.", ephemeral: true });
+      // Garantir que temos o membro
+      let member = interaction.member;
+      if (!member) member = await interaction.guild.members.fetch(interaction.user.id);
+
+      if (!STAFF_ROLES.some(r => member.roles.cache.has(r)))
+        return interaction.reply({ content: "❌ Você não tem permissão.", ephemeral: true });
 
       const titulo = interaction.fields.getTextInputValue("tituloAviso");
       const descricao = interaction.fields.getTextInputValue("descricaoAviso").replace(/\\n/g, "\n");
@@ -120,8 +123,7 @@ client.on("interactionCreate", async interaction => {
 
       if (imagem) embed.setImage(imagem);
 
-      await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone`, embeds: [embed] });
 
       return interaction.reply({ content: "✅ Aviso enviado com sucesso!", ephemeral: true });
     }
@@ -129,7 +131,9 @@ client.on("interactionCreate", async interaction => {
     // ---------- CHAT COMMANDS ----------
     if (interaction.isChatInputCommand()) {
       const cmd = interaction.commandName;
-      if (!isStaff) return interaction.reply({ content: "❌ Você não tem permissão.", ephemeral: true });
+      const member = interaction.member || await interaction.guild.members.fetch(interaction.user.id);
+      if (!STAFF_ROLES.some(r => member.roles.cache.has(r)))
+        return interaction.reply({ content: "❌ Você não tem permissão.", ephemeral: true });
 
       // ---------- /aviso ----------
       if (cmd === "aviso") {
