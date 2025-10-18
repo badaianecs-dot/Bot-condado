@@ -26,7 +26,11 @@ app.listen(PORT, () => console.log(`🌐 Servidor web ativo na porta ${PORT}`));
 
 // ==================== CONFIGURAÇÃO DO BOT ====================
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMembers, // necessário para interaction.member
+  ],
   partials: [Partials.Channel],
 });
 
@@ -92,13 +96,15 @@ client.once("ready", async () => {
   }
 });
 
-// ==================== INTERAÇÕES UNIFICADAS ====================
+// ==================== INTERAÇÕES ====================
 client.on("interactionCreate", async interaction => {
   try {
     const isStaff = STAFF_ROLES.some(r => interaction.member?.roles.cache.has(r));
 
     // ---------- MODAL SUBMIT ----------
     if (interaction.isModalSubmit() && interaction.customId === "modalAviso") {
+      if (!isStaff) return interaction.reply({ content: "❌ Você não tem permissão.", ephemeral: true });
+
       const titulo = interaction.fields.getTextInputValue("tituloAviso");
       const descricao = interaction.fields.getTextInputValue("descricaoAviso").replace(/\\n/g, "\n");
       const imagem = interaction.fields.getTextInputValue("imagemAviso") || null;
@@ -123,11 +129,7 @@ client.on("interactionCreate", async interaction => {
     // ---------- CHAT COMMANDS ----------
     if (interaction.isChatInputCommand()) {
       const cmd = interaction.commandName;
-
-      // Checagem de permissão
-      if (!isStaff) {
-        return interaction.reply({ content: "❌ Você não tem permissão para usar este comando.", ephemeral: true });
-      }
+      if (!isStaff) return interaction.reply({ content: "❌ Você não tem permissão.", ephemeral: true });
 
       // ---------- /aviso ----------
       if (cmd === "aviso") {
