@@ -1,4 +1,4 @@
-// ==================== CONFIGURAÇÃO DE VARIÁVEIS ====================
+// ==================== CONFIGURAÇÃO ====================
 require("dotenv").config();
 
 const { 
@@ -24,7 +24,7 @@ const PORT = process.env.PORT || 3000;
 app.get("/", (req, res) => res.send("Bot rodando! ✅"));
 app.listen(PORT, () => console.log(`🌐 Servidor web ativo na porta ${PORT}`));
 
-// ==================== CONFIGURAÇÃO DO BOT ====================
+// ==================== CLIENTE ====================
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -34,11 +34,11 @@ const client = new Client({
   partials: [Partials.Channel],
 });
 
+// ==================== CONFIGURAÇÕES ====================
 const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_IDS = [process.env.GUILD_ID1, process.env.GUILD_ID2];
 
-// ==================== CARGOS ====================
 const COLOR_PADRAO = "#f6b21b";
 const STAFF_ROLES = [
   "1136127586737590412",
@@ -99,13 +99,32 @@ client.once("ready", async () => {
 // ==================== INTERAÇÕES ====================
 client.on("interactionCreate", async interaction => {
   try {
-    // ---------- MODAL SUBMIT ----------
-    if (interaction.isModalSubmit() && interaction.customId === "modalAviso") {
-      // Garantir que temos o membro
-      let member = interaction.member;
-      if (!member) member = await interaction.guild.members.fetch(interaction.user.id);
+    // ---------- /aviso ----------
+    if (interaction.isChatInputCommand() && interaction.commandName === "aviso") {
+      const member = interaction.member || await interaction.guild.members.fetch(interaction.user.id);
+      if (!STAFF_ROLES.some(r => member.roles.cache.has(r))) 
+        return interaction.reply({ content: "❌ Você não tem permissão.", ephemeral: true });
 
-      if (!STAFF_ROLES.some(r => member.roles.cache.has(r)))
+      const modal = new ModalBuilder().setCustomId("modalAviso").setTitle("📣 Enviar Aviso");
+      modal.addComponents(
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder().setCustomId("tituloAviso").setLabel("Título do aviso").setStyle(TextInputStyle.Short).setRequired(true)
+        ),
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder().setCustomId("descricaoAviso").setLabel("Descrição do aviso").setStyle(TextInputStyle.Paragraph).setRequired(true)
+        ),
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder().setCustomId("imagemAviso").setLabel("Link da imagem (opcional)").setStyle(TextInputStyle.Short).setRequired(false)
+        )
+      );
+
+      return interaction.showModal(modal);
+    }
+
+    // ---------- Modal submit /aviso ----------
+    if (interaction.isModalSubmit() && interaction.customId === "modalAviso") {
+      const member = interaction.member || await interaction.guild.members.fetch(interaction.user.id);
+      if (!STAFF_ROLES.some(r => member.roles.cache.has(r))) 
         return interaction.reply({ content: "❌ Você não tem permissão.", ephemeral: true });
 
       const titulo = interaction.fields.getTextInputValue("tituloAviso");
@@ -116,10 +135,7 @@ client.on("interactionCreate", async interaction => {
         .setColor(COLOR_PADRAO)
         .setTitle(titulo)
         .setDescription(descricao)
-        .setFooter({
-          text: "Atenciosamente, Condado.",
-          iconURL: "https://message.style/cdn/images/68f85b92c91261ecce65f4c8e2965bd56787314598cd6e5433919c5690491550.png",
-        });
+        .setFooter({ text: "Atenciosamente, Condado.", iconURL: "https://message.style/cdn/images/68f85b92c91261ecce65f4c8e2965bd56787314598cd6e5433919c5690491550.png" });
 
       if (imagem) embed.setImage(imagem);
 
@@ -128,117 +144,83 @@ client.on("interactionCreate", async interaction => {
       return interaction.reply({ content: "✅ Aviso enviado com sucesso!", ephemeral: true });
     }
 
-    // ---------- CHAT COMMANDS ----------
-    if (interaction.isChatInputCommand()) {
-      const cmd = interaction.commandName;
+    // ---------- /evento ----------
+    if (interaction.isChatInputCommand() && interaction.commandName === "evento") {
       const member = interaction.member || await interaction.guild.members.fetch(interaction.user.id);
-      if (!STAFF_ROLES.some(r => member.roles.cache.has(r)))
+      if (!STAFF_ROLES.some(r => member.roles.cache.has(r))) 
         return interaction.reply({ content: "❌ Você não tem permissão.", ephemeral: true });
 
-      // ---------- /aviso ----------
-      if (cmd === "aviso") {
-        const modal = new ModalBuilder().setCustomId("modalAviso").setTitle("📣 Enviar Aviso");
+      const titulo = interaction.options.getString("titulo");
+      const descricao = interaction.options.getString("descricao");
+      const data = interaction.options.getString("data");
+      const horario = interaction.options.getString("horario");
+      const local = interaction.options.getString("local");
+      const premiacao = interaction.options.getString("premiacao");
+      const observacao = interaction.options.getString("observacao");
+      const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-        modal.addComponents(
-          new ActionRowBuilder().addComponents(
-            new TextInputBuilder()
-              .setCustomId("tituloAviso")
-              .setLabel("Título do aviso")
-              .setStyle(TextInputStyle.Short)
-              .setRequired(true)
-          ),
-          new ActionRowBuilder().addComponents(
-            new TextInputBuilder()
-              .setCustomId("descricaoAviso")
-              .setLabel("Descrição do aviso (use \\n para quebrar linha)")
-              .setStyle(TextInputStyle.Paragraph)
-              .setRequired(true)
-          ),
-          new ActionRowBuilder().addComponents(
-            new TextInputBuilder()
-              .setCustomId("imagemAviso")
-              .setLabel("Link da imagem (opcional)")
-              .setStyle(TextInputStyle.Short)
-              .setRequired(false)
-          )
-        );
+      let descEmbed = `${descricao}\n\n**Data:** ${data}\n**Horário:** ${horario}\n**Local:** ${local}`;
+      if (premiacao) descEmbed += `\n**Premiação:** ${premiacao}`;
+      if (observacao) descEmbed += `\n**Observação:** ${observacao}`;
 
-        return interaction.showModal(modal);
-      }
+      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descEmbed);
+      if (imagem) embed.setImage(imagem);
 
-      // ---------- /evento ----------
-      if (cmd === "evento") {
-        const titulo = interaction.options.getString("titulo");
-        const descricao = interaction.options.getString("descricao");
-        const data = interaction.options.getString("data");
-        const horario = interaction.options.getString("horario");
-        const local = interaction.options.getString("local");
-        const premiacao = interaction.options.getString("premiacao");
-        const observacao = interaction.options.getString("observacao");
-        const imagem = interaction.options.getAttachment("imagem")?.url || null;
+      await interaction.channel.send({ embeds: [embed] });
+      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
 
-        let descEmbed = `${descricao}\n\n**Data:** ${data}\n**Horário:** ${horario}\n**Local:** ${local}`;
-        if (premiacao) descEmbed += `\n**Premiação:** ${premiacao}`;
-        if (observacao) descEmbed += `\n**Observação:** ${observacao}`;
+      return interaction.reply({ content: "✅ Evento enviado!", ephemeral: true });
+    }
 
-        const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descEmbed);
-        if (imagem) embed.setImage(imagem);
+    // ---------- /cargostreamer ----------
+    if (interaction.isChatInputCommand() && interaction.commandName === "cargostreamer") {
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle("Seja Streamer!")
+        .setDescription("Após uma semana, cumprindo os requisitos, você receberá os benefícios na cidade.\n\nReaja com <:Streamer:1353492062376558674> para receber o cargo Streamer!");
 
-        await interaction.channel.send({ embeds: [embed] });
-        await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+      const mensagem = await interaction.channel.send({ embeds: [embed] });
+      await mensagem.react("1353492062376558674");
 
-        return interaction.reply({ content: "✅ Evento enviado!", ephemeral: true });
-      }
+      return interaction.reply({ content: "✅ Mensagem de cargo enviada!", ephemeral: true });
+    }
 
-      // ---------- /cargostreamer ----------
-      if (cmd === "cargostreamer") {
-        const embed = new EmbedBuilder()
-          .setColor(COLOR_PADRAO)
-          .setTitle("Seja Streamer!")
-          .setDescription(`Após uma semana, cumprindo os requisitos, você receberá os benefícios na cidade.\n\nReaja com <:Streamer:1353492062376558674> para receber o cargo Streamer!`);
+    // ---------- /pix ----------
+    if (interaction.isChatInputCommand() && (interaction.commandName === "pix" || interaction.commandName === "pix2")) {
+      const member = interaction.member || await interaction.guild.members.fetch(interaction.user.id);
+      if (!STAFF_ROLES.some(r => member.roles.cache.has(r))) 
+        return interaction.reply({ content: "❌ Você não tem permissão.", ephemeral: true });
 
-        const mensagem = await interaction.channel.send({ embeds: [embed] });
-        await mensagem.react("1353492062376558674");
+      const valor = interaction.options.getString("valor");
+      const item = interaction.commandName === "pix" ? interaction.options.getString("produto") : interaction.options.getString("servico");
+      const desconto = interaction.options.getString("desconto");
 
-        return interaction.reply({ content: "✅ Mensagem de cargo enviada!", ephemeral: true });
-      }
+      let descricao = `<:Pix:1351222074097664111> **PIX** - ${interaction.commandName === "pix" ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)" : "leandro.hevieira@gmail.com"}\n\n`;
+      descricao += `<:seta:1346148222044995714> **VALOR:** ${valor}\u2003\u2003\u2003**${interaction.commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n`;
+      descricao += "**Enviar o comprovante após o pagamento.**\n";
+      if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
 
-      // ---------- /pix e /pix2 ----------
-      if (cmd === "pix" || cmd === "pix2") {
-        const valor = interaction.options.getString("valor");
-        const item = cmd === "pix" ? interaction.options.getString("produto") : interaction.options.getString("servico");
-        const desconto = interaction.options.getString("desconto");
+      const embed = new EmbedBuilder().setColor("#00FF00").setDescription(descricao);
+      await interaction.channel.send({ embeds: [embed] });
 
-        let descricao = `<:Pix:1351222074097664111> **PIX** - ${cmd === "pix" ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)" : "leandro.hevieira@gmail.com"}\n\n`;
-        descricao += `<:seta:1346148222044995714> **VALOR:** ${valor}\u2003\u2003\u2003**${cmd === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n`;
-        descricao += "**Enviar o comprovante após o pagamento.**\n";
-        if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
+      return interaction.reply({ content: "✅ PIX enviado com sucesso!", ephemeral: true });
+    }
 
-        const embed = new EmbedBuilder().setColor("#00FF00").setDescription(descricao);
-        await interaction.channel.send({ embeds: [embed] });
+    // ---------- /entrevista ----------
+    if (interaction.isChatInputCommand() && interaction.commandName === "entrevista") {
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle("Olá, visitantes!")
+        .setDescription("As entrevistas já estão disponíveis. Para participar, clique no botão abaixo e um membro da equipe irá atendê-lo em breve.\n\nDesejamos boa sorte!");
 
-        return interaction.reply({ content: "✅ PIX enviado com sucesso!", ephemeral: true });
-      }
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setLabel("Aguarde Entrevista").setStyle(ButtonStyle.Link).setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
+      );
 
-      // ---------- /entrevista ----------
-      if (cmd === "entrevista") {
-        const embed = new EmbedBuilder()
-          .setColor(COLOR_PADRAO)
-          .setTitle("Olá, visitantes!")
-          .setDescription("As entrevistas já estão disponíveis. Para participar, clique no botão abaixo e um membro da equipe irá atendê-lo em breve.\n\nDesejamos boa sorte!");
+      await interaction.channel.send({ embeds: [embed], components: [row] });
+      await interaction.channel.send({ content: `<@&1136131478888124526>` });
 
-        const row = new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setLabel("Aguarde Entrevista")
-            .setStyle(ButtonStyle.Link)
-            .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
-        );
-
-        await interaction.channel.send({ embeds: [embed], components: [row] });
-        await interaction.channel.send({ content: `<@&1136131478888124526>` });
-
-        return interaction.reply({ content: "✅ Mensagem de entrevista enviada com sucesso!", ephemeral: true });
-      }
+      return interaction.reply({ content: "✅ Mensagem de entrevista enviada com sucesso!", ephemeral: true });
     }
 
   } catch (err) {
