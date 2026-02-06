@@ -105,15 +105,129 @@ client.on("interactionCreate", async interaction => {
 
     const commandName = interaction.commandName;
     const temPermissao = STAFF_ROLES.some(r => interaction.member.roles.cache.has(r));
+    const comandosSemDefer = ["pix", "pix2"];
 
-    if (!interaction.deferred && !interaction.replied) {
-      await interaction.deferReply({ ephemeral: true });
+    if (!interaction.deferred && !interaction.replied && !comandosSemDefer.includes(commandName)) {
+      await interaction.deferReply({ flags: 64 }); // ephemeral
     }
 
     if (!temPermissao) {
-      return interaction.editReply({ content: "❌ Você não tem permissão para usar este comando.", ephemeral: true });
+      if (interaction.deferred || interaction.replied) {
+        return interaction.editReply({ content: "❌ Você não tem permissão para usar este comando." });
+      } else {
+        return interaction.reply({ content: "❌ Você não tem permissão para usar este comando.", flags: 64 });
+      }
     }
 
+    // /aviso
+    if (commandName === "aviso") {
+      const titulo = interaction.options.getString("titulo");
+      const descricao = interaction.options.getString("descricao").replace(/\\n/g, "\n");
+      const imagem = interaction.options.getAttachment("imagem")?.url || null;
+
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle(titulo)
+        .setDescription(descricao)
+        .setFooter({
+          text: "Atenciosamente, Condado.",
+          iconURL: "https://message.style/cdn/images/68f85b92c91261ecce65f4c8e2965bd56787314598cd6e5433919c5690491550.png"
+        });
+
+      if (imagem) embed.setImage(imagem);
+
+      await interaction.channel.send({ embeds: [embed] });
+      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+
+      return interaction.editReply({ content: "✅ Aviso enviado!" });
+    }
+
+    // /evento
+    if (commandName === "evento") {
+      const titulo = interaction.options.getString("titulo");
+      const descricao = interaction.options.getString("descricao");
+      const data = interaction.options.getString("data");
+      const horario = interaction.options.getString("horario");
+      const local = interaction.options.getString("local");
+      const premiacao = interaction.options.getString("premiacao");
+      const observacao = interaction.options.getString("observacao");
+      const imagem = interaction.options.getAttachment("imagem")?.url || null;
+
+      let descEmbed = `${descricao}\n\n**Data:** ${data}\n\n**Horário:** ${horario}\n\n**Local:** ${local}`;
+      if (premiacao) descEmbed += `\n\n**Premiação:** ${premiacao}`;
+      if (observacao) descEmbed += `\n\n**Observação:** ${observacao}`;
+
+      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descEmbed);
+      if (imagem) embed.setImage(imagem);
+
+      await interaction.channel.send({ embeds: [embed] });
+      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+
+      return interaction.editReply({ content: "✅ Evento enviado!" });
+    }
+
+    // /pix e /pix2
+    if (commandName === "pix" || commandName === "pix2") {
+      const valor = interaction.options.getString("valor");
+      const item = commandName === "pix"
+        ? interaction.options.getString("produto")
+        : interaction.options.getString("servico");
+      const desconto = interaction.options.getString("desconto");
+
+      let descricao = `<:Pix:1351222074097664111> **PIX** - ${
+        commandName === "pix"
+          ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)"
+          : "leandro.hevieira@gmail.com"
+      }\n\n`;
+
+      descricao += `<:seta:1346148222044995714> **VALOR:** ${valor}\u2003\u2003\u2003**${commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n`;
+      descricao += "**Enviar o comprovante após o pagamento.**\n";
+      if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
+
+      const embed = new EmbedBuilder().setColor("#00FF00").setDescription(descricao);
+
+      await interaction.channel.send({ embeds: [embed] });
+      return interaction.reply({ content: "✅ PIX enviado com sucesso!", flags: 64 });
+    }
+
+    // /cargostreamer
+    if (commandName === "cargostreamer") {
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle("Seja Streamer!")
+        .setDescription(
+          `Após uma semana, cumprindo os requisitos, você receberá os benefícios na cidade.\n\nReaja com <:Streamer:1353492062376558674> para receber o cargo Streamer!`
+        );
+
+      const mensagem = await interaction.channel.send({ embeds: [embed] });
+      await mensagem.react("1353492062376558674");
+
+      return interaction.editReply({ content: "✅ Mensagem de cargo enviada!" });
+    }
+
+    // /entrevista
+    if (commandName === "entrevista") {
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle("Olá, visitantes!")
+        .setDescription(
+          "As entrevistas já estão disponíveis. Para participar, clique no botão abaixo e um membro da equipe irá atendê-lo em breve.\n\nDesejamos boa sorte!"
+        );
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setLabel("Aguarde Entrevista")
+          .setStyle(ButtonStyle.Link)
+          .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
+      );
+
+      await interaction.channel.send({ embeds: [embed], components: [row] });
+      await interaction.channel.send({ content: `<@&1136131478888124526>` });
+
+      return interaction.editReply({ content: "✅ Mensagem de entrevista enviada com sucesso!" });
+    }
+
+    // /aprovado
     if (commandName === "aprovado") {
       const usuario = interaction.options.getUser("usuario");
       const motivo = interaction.options.getString("motivo");
@@ -128,9 +242,10 @@ client.on("interactionCreate", async interaction => {
         });
 
       await interaction.channel.send({ embeds: [embed] });
-      return interaction.editReply({ content: "✅ Aprovação enviada!", ephemeral: true });
+      return interaction.editReply({ content: "✅ Aprovação enviada!" });
     }
 
+    // /reprovado
     if (commandName === "reprovado") {
       const usuario = interaction.options.getUser("usuario");
       const motivo = interaction.options.getString("motivo");
@@ -145,17 +260,36 @@ client.on("interactionCreate", async interaction => {
         });
 
       await interaction.channel.send({ embeds: [embed] });
-      return interaction.editReply({ content: "❌ Reprovação enviada!", ephemeral: true });
+      return interaction.editReply({ content: "❌ Reprovação enviada!" });
     }
 
-    // 👉 O RESTO DOS SEUS COMANDOS CONTINUA IGUAL
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
-    if (!interaction.replied && !interaction.deferred) {
-      await interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true });
-    } else {
-      await interaction.followUp({ content: "❌ Ocorreu um erro.", ephemeral: true });
+    try {
+      if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply({ content: "❌ Ocorreu um erro.", flags: 64 });
+      } else if (interaction.deferred && !interaction.replied) {
+        await interaction.editReply({ content: "❌ Ocorreu um erro." });
+      }
+    } catch (e) {
+      console.error("Falha ao responder erro da interação:", e);
     }
+  }
+});
+
+// ---------------- REAÇÕES ----------------
+client.on("messageReactionAdd", async (reaction, user) => {
+  try {
+    if (reaction.partial) await reaction.fetch();
+    if (reaction.message.partial) await reaction.message.fetch();
+    if (user.bot) return;
+
+    if (reaction.emoji.id === "1353492062376558674") {
+      const member = await reaction.message.guild.members.fetch(user.id);
+      await member.roles.add(STREAMER_ROLE);
+    }
+  } catch (err) {
+    console.error("Erro em messageReactionAdd:", err);
   }
 });
 
